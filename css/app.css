@@ -1,0 +1,352 @@
+/* MapsX app chrome. All colors/fonts flow from CSS custom properties set by
+   the active theme (see themes.js uiVars/uiFonts), so the UI restyles itself
+   along with the map. */
+
+:root {
+  --bg: #e8dabb;
+  --panel: #f2e7cd;
+  --panel-edge: #b09468;
+  --ink: #43301a;
+  --muted: #7d6748;
+  --accent: #8a4a24;
+  --btn-bg: #43301a;
+  --btn-ink: #f2e7cd;
+  --radius: 4px;
+  --font-display: serif;
+  --font-body: serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+  display: flex;
+  transition: background 0.3s;
+}
+
+body.busy { cursor: progress; }
+
+/* --- sidebar --- */
+
+#sidebar {
+  width: 300px;
+  flex: none;
+  background: var(--panel);
+  border-right: 2px solid var(--panel-edge);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 14px;
+  gap: 14px;
+  overflow-y: auto;
+  z-index: 10;
+  transition: background 0.3s, color 0.3s;
+}
+
+#sidebar h1 {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+#sidebar .tagline {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  margin: 6px 0 -6px;
+}
+
+/* --- search --- */
+
+.search-wrap { position: relative; }
+
+#search {
+  width: 100%;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  outline: none;
+}
+#search:focus { border-color: var(--accent); }
+#search::placeholder { color: var(--muted); opacity: 0.8; }
+
+#search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  margin: 0; padding: 4px;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  z-index: 30;
+  max-height: 260px;
+  overflow-y: auto;
+}
+#search-results li {
+  padding: 7px 9px;
+  font-size: 12.5px;
+  cursor: pointer;
+  border-radius: calc(var(--radius) / 2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#search-results li:hover, #search-results li:focus { background: var(--bg); }
+
+/* --- theme cards --- */
+
+#theme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.theme-card {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 9px 10px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s;
+}
+.theme-card:hover { transform: translateX(3px); }
+.theme-card.active { border: 2px solid var(--accent); padding: 8px 9px; }
+
+.theme-card .swatches {
+  grid-row: 1 / 3;
+  display: flex;
+  height: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: calc(var(--radius) / 2);
+  overflow: hidden;
+}
+.theme-card .swatches i { flex: 1; }
+
+.theme-card .tname { font-size: 14.5px; font-weight: 600; }
+.theme-card .tblurb { font-size: 11px; color: var(--muted); line-height: 1.25; }
+
+/* --- buttons --- */
+
+.btn {
+  font: inherit;
+  font-size: 14px;
+  padding: 9px 14px;
+  color: var(--btn-ink);
+  background: var(--btn-bg);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+.btn:hover { filter: brightness(1.15); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+}
+
+#sidebar footer {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+#sidebar footer a { color: var(--accent); }
+
+/* --- map area --- */
+
+#map-wrap { position: relative; flex: 1; }
+#map { position: absolute; inset: 0; background: var(--bg); }
+
+/* terminal scanline overlay (screen only; export draws its own) */
+body[data-effect='scanlines'] #map-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px, transparent 4px
+  );
+  mix-blend-mode: multiply;
+}
+body[data-effect='scanlines'] #sidebar { text-shadow: 0 0 6px rgba(64, 255, 150, 0.35); }
+
+/* --- crop frame --- */
+
+#crop-frame {
+  position: absolute;
+  z-index: 6;
+  border: 2px dashed var(--accent);
+  outline: 2000px solid color-mix(in srgb, var(--bg) 55%, transparent);
+  cursor: grab;
+  touch-action: none;
+}
+#crop-frame:active { cursor: grabbing; }
+#crop-frame .handle {
+  position: absolute;
+  right: -9px;
+  bottom: -9px;
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  border: 2px solid var(--panel);
+  border-radius: 50%;
+  cursor: nwse-resize;
+}
+#crop-frame .frame-hint {
+  position: absolute;
+  top: -26px;
+  left: 0;
+  font-size: 11.5px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  white-space: nowrap;
+}
+
+/* --- export panel --- */
+
+#export-panel {
+  position: absolute;
+  right: 12px;
+  bottom: 40px;
+  z-index: 20;
+  width: 270px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+#export-panel h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0 0 2px;
+}
+#export-panel label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+#export-panel select, #export-panel input[type='text'] {
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  padding: 5px 7px;
+  max-width: 160px;
+}
+#export-panel input[type='text'] { width: 160px; }
+#export-panel .row { display: flex; gap: 8px; margin-top: 4px; }
+#export-panel .row .btn { flex: 1; }
+#export-panel[hidden], #crop-frame[hidden] { display: none; }
+#exp-status { font-size: 12px; color: var(--muted); min-height: 1.2em; }
+#btn-export-close {
+  position: absolute;
+  top: 6px; right: 8px;
+  background: none; border: none;
+  font-size: 16px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* floating export opener */
+#btn-export-open {
+  position: absolute;
+  right: 12px;
+  bottom: 40px;
+  z-index: 15;
+}
+#export-panel:not([hidden]) ~ #btn-export-open { display: none; }
+
+/* --- toast + dialog --- */
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 80px);
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+  padding: 10px 18px;
+  font-size: 13.5px;
+  z-index: 100;
+  opacity: 0;
+  transition: transform 0.25s, opacity 0.25s;
+  max-width: 80vw;
+}
+#toast.show { transform: translate(-50%, 0); opacity: 1; }
+#toast.error { border-color: #c0392b; }
+
+#about-dialog {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--panel);
+  border: 2px solid var(--panel-edge);
+  border-radius: var(--radius);
+  max-width: 440px;
+  padding: 22px 26px;
+  line-height: 1.55;
+  font-size: 14px;
+}
+#about-dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+#about-dialog h2 { font-family: var(--font-display); font-weight: 400; margin-top: 0; }
+#about-dialog a { color: var(--accent); }
+
+/* maplibre attribution readability across themes */
+.maplibregl-ctrl-attrib { font-size: 10.5px; }
+
+@media (max-width: 720px) {
+  body { flex-direction: column; }
+  #sidebar {
+    width: 100%;
+    max-height: 45%;
+    border-right: none;
+    border-bottom: 2px solid var(--panel-edge);
+  }
+}

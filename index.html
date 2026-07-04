@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MapsX — Stylized Map Filters</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>" />
+  <link rel="stylesheet" href="vendor/maplibre-gl.css" />
+  <link rel="stylesheet" href="css/fonts.css" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <aside id="sidebar">
+    <header>
+      <h1>MapsX</h1>
+      <p class="tagline">Stylized filters for real-world maps</p>
+    </header>
+
+    <div class="search-wrap">
+      <input id="search" type="text" placeholder="Search a place…" autocomplete="off" spellcheck="false" />
+      <ul id="search-results" hidden></ul>
+    </div>
+
+    <p class="section-label">Filters</p>
+    <div id="theme-list"></div>
+
+    <button id="btn-about" class="btn ghost" type="button">About &amp; data sources</button>
+
+    <footer>
+      Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors,
+      tiles by <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a>.
+    </footer>
+  </aside>
+
+  <main id="map-wrap">
+    <div id="map"></div>
+
+    <div id="crop-frame" hidden>
+      <span class="frame-hint">Print area — drag to move, corner to resize</span>
+      <span class="handle"></span>
+    </div>
+
+    <section id="export-panel" hidden>
+      <button id="btn-export-close" type="button" title="Close">✕</button>
+      <h2>Export for print</h2>
+      <label>Paper <select id="exp-paper"></select></label>
+      <label>Orientation
+        <select id="exp-orient">
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+      </label>
+      <label>Resolution
+        <select id="exp-dpi">
+          <option value="96">96 dpi (screen)</option>
+          <option value="150" selected>150 dpi</option>
+          <option value="300">300 dpi (print)</option>
+        </select>
+      </label>
+      <label>Title <input id="exp-title" type="text" placeholder="Map title (optional)" /></label>
+      <label style="justify-content:flex-start">
+        <input id="exp-decor" type="checkbox" checked /> Decorative frame &amp; margins
+      </label>
+      <div class="row">
+        <button id="btn-export-png" class="btn" type="button">Save PNG</button>
+        <button id="btn-export-print" class="btn ghost" type="button">Print…</button>
+      </div>
+      <p id="exp-status"></p>
+    </section>
+
+    <button id="btn-export-open" class="btn" type="button">🖨 Export / Print</button>
+  </main>
+
+  <div id="toast"></div>
+
+  <dialog id="about-dialog">
+    <h2>About MapsX</h2>
+    <p>
+      MapsX applies fully stylized “filters” — color palette, typography and
+      point-of-interest icons — to real map data, and exports a selected area
+      as a print-ready PNG.
+    </p>
+    <p>
+      It uses <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
+      vector tiles served by <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a>
+      (no API key required), rendered with
+      <a href="https://maplibre.org" target="_blank" rel="noopener">MapLibre GL JS</a>.
+      Search is powered by
+      <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a>.
+      Fonts are rendered into map glyphs locally in your browser, so any
+      bundled font can appear on the map itself.
+    </p>
+    <p>If you print or publish an export, keep the OpenStreetMap attribution visible.</p>
+    <form method="dialog"><button class="btn">Close</button></form>
+  </dialog>
+
+  <script src="vendor/maplibre-gl.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

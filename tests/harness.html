@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>MapsX glyph-engine harness</title>
+  <link rel="stylesheet" href="../vendor/maplibre-gl.css" />
+  <link rel="stylesheet" href="../css/fonts.css" />
+  <style>
+    body { margin: 0; font-family: monospace; background: #222; color: #eee; }
+    #map { width: 700px; height: 400px; }
+    #log { padding: 8px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <!--
+    Offline end-to-end test of the local glyph engine: renders labels in a
+    bundled font on a GeoJSON-only MapLibre map (no tile server needed) and
+    verifies both the generated glyph PBF structure and the rendered pixels.
+    Driven by tests/smoke.mjs; also usable by hand via any static server.
+  -->
+  <div id="map"></div>
+  <div id="log"></div>
+  <script src="../vendor/maplibre-gl.js"></script>
+  <script type="module">
+    import { registerGlyphProtocol, generateGlyphRange } from '../js/glyphs.js';
+
+    const log = (m) => { document.getElementById('log').textContent += m + '\n'; };
+    const results = (window.__results = { checks: {}, errors: [], done: false });
+
+    function check(name, ok, detail = '') {
+      results.checks[name] = !!ok;
+      log(`${ok ? 'PASS' : 'FAIL'} ${name} ${detail}`);
+    }
+
+    // tiny decoder for the glyph pbf
+    function decode(buf) {
+      let pos = 0;
+      const varint = () => {
+        let v = 0, s = 0;
+        for (;;) {
+          const b = buf[pos++];
+          v += (b & 0x7f) * 2 ** s;
+          if (b < 0x80) return v;
+          s += 7;
+        }
+      };
+      const fields = (end, out = []) => {
+        while (pos < end) {
+          const tag = varint();
+          if ((tag & 7) === 0) out.push([tag >> 3, varint()]);
+          else {
+            const len = varint();
+            out.push([tag >> 3, buf.subarray(pos, pos + len)]);
+            pos += len;
+          }
+        }
+        return out;
+      };
+      const root = fields(buf.length);
+      const stackBuf = root[0][1];
+      pos = 0;
+      const save = buf;
+      buf = stackBuf;
+      const stackFields = fields(stackBuf.length);
+      const glyphs = [];
+      for (const [f, v] of stackFields) {
+        if (f !== 3) continue;
+        pos = 0;
+        buf = v;
+        const g = Object.fromEntries(fields(v.length));
+        glyphs.push(g);
+      }
+      buf = save;
+      return { glyphs };
+    }
+
+    async function main() {
+      registerGlyphProtocol(maplibregl);
+
+      // 1) direct PBF generation
+      const pbf = await generateGlyphRange('UnifrakturMaguntia Regular', '0-255');
+      const { glyphs } = decode(pbf);
+      check('pbf-has-glyphs', glyphs.length > 150, `(${glyphs.length} glyphs)`);
+      const A = glyphs.find((g) => g[1] === 65);
+      check('glyph-A-exists', !!A);
+      if (A) {
+        check('glyph-A-bitmap-size', A[2].length === (A[3] + 6) * (A[4] + 6),
+          `(bitmap ${A[2].length}, metrics ${A[3]}x${A[4]})`);
+        check('glyph-A-advance', A[7] > 5 && A[7] < 40, `(advance ${A[7]})`);
+      }
+      const space = glyphs.find((g) => g[1] === 32);
+      check('glyph-space-advance', !!space && space[7] > 0);
+
+      // 2) full map render with glyphs:// labels, no tile server
+      const map = new maplibregl.Map({
+        container: 'map',
+        style: {
+          version: 8,
+          glyphs: 'glyphs://{fontstack}/{range}',
+          sources: {
+            pts: {
+              type: 'geojson',
+              data: {
+                type: 'FeatureCollection',
+                features: [
+                  { type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { name: 'Praha' } },
+                  { type: 'Feature', geometry: { type: 'Point', coordinates: [0.15, 0.05] }, properties: { name: '☕ ⚓ ✚' } },
+                ],
+              },
+            },
+          },
+          layers: [
+            { id: 'bg', type: 'background', paint: { 'background-color': '#ecdfc3' } },
+            {
+              id: 'labels', type: 'symbol', source: 'pts',
+              layout: {
+                'text-field': ['get', 'name'],
+                'text-font': ['UnifrakturMaguntia Regular'],
+                'text-size': 40,
+                'text-allow-overlap': true,
+              },
+              paint: { 'text-color': '#43301a' },
+            },
+          ],
+        },
+        center: [0.07, 0.02],
+        zoom: 8,
+        interactive: false,
+        canvasContextAttributes: { preserveDrawingBuffer: true },
+      });
+
+      map.on('error', (e) => results.errors.push(String(e.error?.message || e.error)));
+
+      await new Promise((resolve) => map.once('idle', resolve));
+      // count non-background pixels
+      const src = map.getCanvas();
+      const c = document.createElement('canvas');
+      c.width = src.width;
+      c.height = src.height;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(src, 0, 0);
+      const data = ctx.getImageData(0, 0, c.width, c.height).data;
+      let inked = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        if (Math.abs(data[i] - 0xec) > 24 || Math.abs(data[i + 1] - 0xdf) > 24) inked++;
+      }
+      check('labels-rendered', inked > 500, `(${inked} inked px)`);
+      check('no-map-errors', results.errors.length === 0, results.errors.join('; '));
+      results.done = true;
+    }
+
+    main().catch((e) => {
+      results.errors.push(String(e));
+      log('FATAL ' + (e.stack || e));
+      results.done = true;
+    });
+  </script>
+</body>
+</html>

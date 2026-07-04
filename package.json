@@ -1,0 +1,12 @@
+{
+  "name": "mapsx",
+  "version": "0.1.0",
+  "description": "Stylized map filters (medieval, terminal, blueprint…) over OpenStreetMap vector tiles, with print-ready export.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "npx -y serve -l 8080 .",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "license": "MIT"
+}
