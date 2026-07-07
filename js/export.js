@@ -50,7 +50,9 @@ export async function renderPrint(maplibregl, opts, view) {
     pitch: 0,
     interactive: false,
     attributionControl: false,
-    pixelRatio: ratio,
+    // Pixel-art themes keep their low fixed ratio so print output stays as
+    // blocky as the screen; the nearest-neighbor drawImage below upscales it.
+    pixelRatio: opts.theme.pixelScale || ratio,
     maxCanvasSize: [16384, 16384],
     fadeDuration: 0,
     canvasContextAttributes: { preserveDrawingBuffer: true, antialias: true },
@@ -71,7 +73,9 @@ export async function renderPrint(maplibregl, opts, view) {
 
     const mapX = margin;
     const mapY = margin + (opts.title && opts.frame ? Math.round(0.5 * opts.dpi) : 0);
+    if (opts.theme.pixelScale) ctx.imageSmoothingEnabled = false;
     ctx.drawImage(mapCanvas, mapX, mapY, mapPxW, mapPxH);
+    ctx.imageSmoothingEnabled = true;
 
     if (opts.theme.effect === 'scanlines') drawScanlines(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
 
@@ -124,6 +128,8 @@ function drawOverlays(ctx, opts, g) {
 
     if (t.exportFrame === 'parchment' || t.exportFrame === 'gazette') {
       drawCornerFlourishes(ctx, g, ink, dpi);
+    } else if (t.exportFrame === 'arcade') {
+      drawPixelCorners(ctx, g, ink, dpi);
     }
 
     if (opts.title) {
@@ -183,6 +189,26 @@ function drawCornerFlourishes(ctx, g, ink, dpi) {
     ctx.beginPath();
     ctx.arc(x + dx * s * 0.55, y + dy * s * 0.55, s * 0.1, 0, Math.PI * 2);
     ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// staircase blocks on each corner, like an old game's dialog box
+function drawPixelCorners(ctx, g, ink, dpi) {
+  const u = Math.max(3, Math.round(dpi * 0.045)); // one "pixel"
+  const off = Math.max(2, Math.round(dpi / 150)) * 7;
+  ctx.save();
+  ctx.fillStyle = ink;
+  const corners = [
+    [g.mapX - off, g.mapY - off, 1, 1],
+    [g.mapX + g.mapPxW + off, g.mapY - off, -1, 1],
+    [g.mapX - off, g.mapY + g.mapPxH + off, 1, -1],
+    [g.mapX + g.mapPxW + off, g.mapY + g.mapPxH + off, -1, -1],
+  ];
+  for (const [x, y, dx, dy] of corners) {
+    for (const [px, py] of [[0, 0], [1, 0], [2, 0], [0, 1], [0, 2], [1, 1]]) {
+      ctx.fillRect(x + dx * px * u - (dx < 0 ? u : 0), y + dy * py * u - (dy < 0 ? u : 0), u, u);
+    }
   }
   ctx.restore();
 }

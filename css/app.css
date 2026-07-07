@@ -205,6 +205,13 @@ body[data-effect='scanlines'] #map-wrap::after {
 }
 body[data-effect='scanlines'] #sidebar { text-shadow: 0 0 6px rgba(64, 255, 150, 0.35); }
 
+/* 8-bit: nearest-neighbor upscale of the low-res canvas */
+body[data-effect='pixelate'] .maplibregl-canvas { image-rendering: pixelated; }
+body[data-effect='pixelate'] #sidebar h1 { font-size: 24px; line-height: 1.3; }
+body[data-effect='pixelate'] #sidebar,
+body[data-effect='pixelate'] #export-panel { font-size: 15px; }
+body[data-effect='pixelate'] #export-panel h2 { font-size: 13px; }
+
 /* --- crop frame --- */
 
 #crop-frame {

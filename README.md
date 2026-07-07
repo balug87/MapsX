@@ -4,7 +4,7 @@ A web app that applies fully stylized "filters" to real-world maps — color
 palette, typography, and point-of-interest icons all change together — and
 exports any selected area as a print-ready PNG.
 
-Ships with five filters:
+Ships with six filters:
 
 | Filter | Look |
 |---|---|
@@ -12,6 +12,7 @@ Ships with five filters:
 | **Terminal** | Phosphor green on black, VT323 pixel type, scanline overlay |
 | **Blueprint** | White ink on cyanotype blue, hand-drafted lettering (Architects Daughter) |
 | **Noir Gazette** | Newsprint palette, Playfair Display headlines, typewriter details |
+| **8-Bit Overworld** | NES sprite palette, Press Start 2P labels, genuinely pixelated rendering (low-res canvas upscaled nearest-neighbor, on screen and in print) |
 | **Candy Pastel** | Soft sorbet tones with rounded Quicksand type |
 
 ## Run it

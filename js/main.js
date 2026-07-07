@@ -48,6 +48,7 @@ const map = new maplibregl.Map({
   attributionControl: { compact: true },
 });
 map.addControl(new maplibregl.NavigationControl({ showPitch: false }), 'top-right');
+applyPixelScale();
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 map.on('moveend', writeHash);
 
@@ -73,10 +74,17 @@ function applyThemeToUI() {
   }
 }
 
+function applyPixelScale() {
+  // Pixel-art themes render the canvas at a low fixed ratio and let CSS
+  // upscale it nearest-neighbor (see [data-effect='pixelate'] in app.css).
+  map.setPixelRatio(theme.pixelScale || window.devicePixelRatio || 1);
+}
+
 function setTheme(id) {
   theme = getTheme(id);
   localStorage.setItem('mapsx-theme', theme.id);
   map.setStyle(buildStyle(theme));
+  applyPixelScale();
   applyThemeToUI();
   writeHash();
 }

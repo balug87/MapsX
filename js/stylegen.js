@@ -322,6 +322,14 @@ export function buildStyle(theme) {
     },
   ];
 
+  if (theme.textScale && theme.textScale !== 1) {
+    for (const layer of layers) {
+      if (layer.layout?.['text-size'] !== undefined) {
+        layer.layout['text-size'] = scaleTextSize(layer.layout['text-size'], theme.textScale);
+      }
+    }
+  }
+
   return {
     version: 8,
     name: `MapsX ${theme.name}`,
@@ -331,6 +339,19 @@ export function buildStyle(theme) {
     },
     layers,
   };
+}
+
+// Multiply a text-size value (number or interpolate expression) by a factor;
+// used by themes that render at low pixel ratios and need bigger type.
+function scaleTextSize(value, factor) {
+  const scale = (n) => Math.round(n * factor * 10) / 10;
+  if (typeof value === 'number') return scale(value);
+  if (Array.isArray(value) && value[0] === 'interpolate') {
+    const out = value.slice();
+    for (let i = 4; i < out.length; i += 2) out[i] = scale(out[i]);
+    return out;
+  }
+  return value;
 }
 
 function roadPair(theme, id, classes, fill, casing, w14, minzoom) {

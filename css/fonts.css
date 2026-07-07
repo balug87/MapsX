@@ -57,6 +57,12 @@
   src: url('../fonts/special-elite-latin-400-normal.woff2') format('woff2');
 }
 @font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/press-start-2p-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
   font-family: 'Quicksand';
   font-style: normal;
   font-weight: 400;
