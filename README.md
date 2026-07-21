@@ -17,6 +17,12 @@ Ships with six filters:
 
 ## Run it
 
+**Live:** https://balug87.github.io/MapsX/ — deployed automatically from
+`main` by GitHub Pages (`.github/workflows/pages.yml`); no build step, the
+repo is served as-is.
+
+### Locally
+
 No build step, no API keys. Serve the folder with any static server:
 
 ```sh
