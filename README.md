@@ -19,8 +19,9 @@ Ships with seven filters:
 ## Run it
 
 **Live:** https://balug87.github.io/MapsX/ — deployed automatically from
-`main` by GitHub Pages (`.github/workflows/pages.yml`); no build step, the
-repo is served as-is.
+the `main` branch by GitHub Pages (`.github/workflows/pages.yml`). Merging
+a PR into another branch does **not** update the live site until those
+commits are on `main`. No build step; the repo is served as-is.
 
 ### Locally
 
