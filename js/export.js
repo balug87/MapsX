@@ -176,13 +176,14 @@ function drawInkBlots(ctx, x, y, w, h) {
   ctx.fillRect(x, y, w, h);
   ctx.globalCompositeOperation = 'multiply';
   const blots = [
-    { px: 0.14, py: 0.18, rx: 0.055, ry: 0.04, a: 0.3 },
-    { px: 0.78, py: 0.28, rx: 0.035, ry: 0.045, a: 0.26 },
-    { px: 0.36, py: 0.72, rx: 0.045, ry: 0.032, a: 0.24 },
-    { px: 0.88, py: 0.78, rx: 0.03, ry: 0.028, a: 0.22 },
-    { px: 0.52, py: 0.42, rx: 0.04, ry: 0.036, a: 0.18 },
-    { px: 0.08, py: 0.58, rx: 0.022, ry: 0.028, a: 0.2 },
-    { px: 0.62, py: 0.12, rx: 0.028, ry: 0.02, a: 0.16 },
+    { px: 0.14, py: 0.18, rx: 0.07, ry: 0.05, a: 0.42 },
+    { px: 0.78, py: 0.28, rx: 0.045, ry: 0.055, a: 0.36 },
+    { px: 0.36, py: 0.72, rx: 0.055, ry: 0.04, a: 0.34 },
+    { px: 0.88, py: 0.78, rx: 0.038, ry: 0.034, a: 0.3 },
+    { px: 0.52, py: 0.42, rx: 0.05, ry: 0.045, a: 0.26 },
+    { px: 0.08, py: 0.58, rx: 0.028, ry: 0.035, a: 0.28 },
+    { px: 0.62, py: 0.12, rx: 0.035, ry: 0.025, a: 0.24 },
+    { px: 0.24, py: 0.48, rx: 0.024, ry: 0.03, a: 0.2 },
   ];
   for (const b of blots) {
     const cx = x + w * b.px;

@@ -299,15 +299,16 @@ body[data-effect='halftone'] #map-wrap::after {
   inset: 0;
   pointer-events: none;
   z-index: 5;
-  /* % positions stay put when the map zooms */
+  /* % positions stay put when the map zooms — soft ink, still clearly visible */
   background:
-    radial-gradient(ellipse 70px 52px at 14% 18%, rgba(28, 26, 21, 0.3) 0%, rgba(28, 26, 21, 0.12) 42%, transparent 72%),
-    radial-gradient(ellipse 44px 58px at 78% 28%, rgba(28, 26, 21, 0.26) 0%, rgba(28, 26, 21, 0.1) 45%, transparent 70%),
-    radial-gradient(ellipse 56px 40px at 36% 72%, rgba(28, 26, 21, 0.24) 0%, rgba(28, 26, 21, 0.09) 48%, transparent 72%),
-    radial-gradient(ellipse 38px 34px at 88% 78%, rgba(28, 26, 21, 0.22) 0%, transparent 68%),
-    radial-gradient(ellipse 50px 46px at 52% 42%, rgba(28, 26, 21, 0.18) 0%, transparent 65%),
-    radial-gradient(ellipse 28px 36px at 8% 58%, rgba(28, 26, 21, 0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 34px 24px at 62% 12%, rgba(28, 26, 21, 0.16) 0%, transparent 68%);
+    radial-gradient(ellipse 90px 68px at 14% 18%, rgba(20, 18, 14, 0.42) 0%, rgba(20, 18, 14, 0.18) 40%, transparent 74%),
+    radial-gradient(ellipse 58px 74px at 78% 28%, rgba(20, 18, 14, 0.36) 0%, rgba(20, 18, 14, 0.14) 42%, transparent 72%),
+    radial-gradient(ellipse 72px 52px at 36% 72%, rgba(20, 18, 14, 0.34) 0%, rgba(20, 18, 14, 0.12) 45%, transparent 74%),
+    radial-gradient(ellipse 48px 42px at 88% 78%, rgba(20, 18, 14, 0.3) 0%, transparent 70%),
+    radial-gradient(ellipse 64px 58px at 52% 42%, rgba(20, 18, 14, 0.26) 0%, transparent 68%),
+    radial-gradient(ellipse 36px 46px at 8% 58%, rgba(20, 18, 14, 0.28) 0%, transparent 72%),
+    radial-gradient(ellipse 44px 32px at 62% 12%, rgba(20, 18, 14, 0.24) 0%, transparent 70%),
+    radial-gradient(ellipse 30px 38px at 24% 48%, rgba(20, 18, 14, 0.2) 0%, transparent 68%);
   mix-blend-mode: multiply;
 }
 
@@ -329,20 +330,20 @@ body[data-effect='blueprint-grid'] #map-wrap::after {
   inset: 0;
   pointer-events: none;
   z-index: 5;
-  /* Folds at 25% / 50% / 75% — equal spacing, viewport-fixed */
+  /* Folds at 25% / 50% / 75% — equal spacing, viewport-fixed, no animation */
   background:
-    linear-gradient(90deg, transparent calc(25% - 7px), rgba(8, 30, 60, 0.22) calc(25% - 2px), transparent 25%),
-    linear-gradient(90deg, transparent calc(50% - 8px), rgba(8, 30, 60, 0.28) calc(50% - 2px), transparent 50%),
-    linear-gradient(90deg, transparent calc(75% - 7px), rgba(8, 30, 60, 0.22) calc(75% - 2px), transparent 75%),
-    linear-gradient(180deg, transparent calc(25% - 7px), rgba(8, 30, 60, 0.2) calc(25% - 2px), transparent 25%),
-    linear-gradient(180deg, transparent calc(50% - 8px), rgba(8, 30, 60, 0.26) calc(50% - 2px), transparent 50%),
-    linear-gradient(180deg, transparent calc(75% - 7px), rgba(8, 30, 60, 0.2) calc(75% - 2px), transparent 75%),
-    linear-gradient(90deg, transparent calc(25% - 1.5px), rgba(255, 255, 255, 0.55) 25%, transparent calc(25% + 1.5px)),
-    linear-gradient(90deg, transparent calc(50% - 2px), rgba(255, 255, 255, 0.7) 50%, transparent calc(50% + 2px)),
-    linear-gradient(90deg, transparent calc(75% - 1.5px), rgba(255, 255, 255, 0.55) 75%, transparent calc(75% + 1.5px)),
-    linear-gradient(180deg, transparent calc(25% - 1.5px), rgba(255, 255, 255, 0.5) 25%, transparent calc(25% + 1.5px)),
-    linear-gradient(180deg, transparent calc(50% - 2px), rgba(255, 255, 255, 0.65) 50%, transparent calc(50% + 2px)),
-    linear-gradient(180deg, transparent calc(75% - 1.5px), rgba(255, 255, 255, 0.5) 75%, transparent calc(75% + 1.5px));
+    linear-gradient(90deg, transparent calc(25% - 9px), rgba(8, 30, 60, 0.28) calc(25% - 2px), transparent 25%),
+    linear-gradient(90deg, transparent calc(50% - 10px), rgba(8, 30, 60, 0.34) calc(50% - 2px), transparent 50%),
+    linear-gradient(90deg, transparent calc(75% - 9px), rgba(8, 30, 60, 0.28) calc(75% - 2px), transparent 75%),
+    linear-gradient(180deg, transparent calc(25% - 9px), rgba(8, 30, 60, 0.26) calc(25% - 2px), transparent 25%),
+    linear-gradient(180deg, transparent calc(50% - 10px), rgba(8, 30, 60, 0.32) calc(50% - 2px), transparent 50%),
+    linear-gradient(180deg, transparent calc(75% - 9px), rgba(8, 30, 60, 0.26) calc(75% - 2px), transparent 75%),
+    linear-gradient(90deg, transparent calc(25% - 2px), rgba(255, 255, 255, 0.75) 25%, transparent calc(25% + 2px)),
+    linear-gradient(90deg, transparent calc(50% - 2.5px), rgba(255, 255, 255, 0.88) 50%, transparent calc(50% + 2.5px)),
+    linear-gradient(90deg, transparent calc(75% - 2px), rgba(255, 255, 255, 0.75) 75%, transparent calc(75% + 2px)),
+    linear-gradient(180deg, transparent calc(25% - 2px), rgba(255, 255, 255, 0.7) 25%, transparent calc(25% + 2px)),
+    linear-gradient(180deg, transparent calc(50% - 2.5px), rgba(255, 255, 255, 0.82) 50%, transparent calc(50% + 2.5px)),
+    linear-gradient(180deg, transparent calc(75% - 2px), rgba(255, 255, 255, 0.7) 75%, transparent calc(75% + 2px));
 }
 
 /* --- living atmospheres (screen only; exports stay still) --- */
