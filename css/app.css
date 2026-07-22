@@ -315,6 +315,82 @@ body[data-effect='blueprint-grid'] #map-wrap::after {
   mix-blend-mode: screen;
 }
 
+/* --- living atmospheres (screen only; exports stay still) --- */
+/* Subtle motion so each filter feels alive. Disabled when the user
+   prefers reduced motion. */
+
+@media (prefers-reduced-motion: no-preference) {
+  body[data-effect='parchment'] #map-wrap::after {
+    animation: mapsx-fiber-drift 56s linear infinite;
+  }
+  body[data-effect='scanlines'] #map-wrap::before {
+    animation: mapsx-vignette-breathe 5.5s ease-in-out infinite;
+  }
+  body[data-effect='scanlines'] #map-wrap::after {
+    animation: mapsx-scan-drift 7s linear infinite, mapsx-crt-flicker 3.8s ease-in-out infinite;
+  }
+  body[data-effect='halftone'] #map-wrap::after {
+    animation: mapsx-halftone-crawl 40s linear infinite;
+  }
+  body[data-effect='blueprint-grid'] #map-wrap::after {
+    animation: mapsx-grid-drift 90s linear infinite;
+  }
+  body[data-effect='lcd-grid'] #map-wrap::after {
+    animation: mapsx-lcd-refresh 2.4s steps(2, end) infinite;
+  }
+  /* 8-bit: faint drifting shadow band — keeps pixels still, adds life */
+  body[data-effect='pixelate'] #map-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(0, 0, 0, 0.06) 48%,
+      transparent 52%
+    );
+    background-size: 100% 220%;
+    animation: mapsx-pixel-band 9s linear infinite;
+    mix-blend-mode: multiply;
+  }
+}
+
+@keyframes mapsx-fiber-drift {
+  from { background-position: 0 0, 0 0, 0 0; }
+  to { background-position: 28px 20px, -22px 16px, 36px -24px; }
+}
+@keyframes mapsx-scan-drift {
+  from { background-position: 0 0; }
+  to { background-position: 0 4px; }
+}
+@keyframes mapsx-crt-flicker {
+  0%, 100% { opacity: 1; }
+  48% { opacity: 0.92; }
+  52% { opacity: 1; }
+  96% { opacity: 0.88; }
+}
+@keyframes mapsx-vignette-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.82; }
+}
+@keyframes mapsx-halftone-crawl {
+  from { background-position: 0 0; }
+  to { background-position: 3px 3px; }
+}
+@keyframes mapsx-grid-drift {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: 0 24px, 24px 0, 0 6px, 6px 0; }
+}
+@keyframes mapsx-lcd-refresh {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.9; }
+}
+@keyframes mapsx-pixel-band {
+  from { background-position: 0 0; }
+  to { background-position: 0 100%; }
+}
 
 /* --- crop frame --- */
 

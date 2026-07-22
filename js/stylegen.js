@@ -9,6 +9,11 @@ export const ATTRIBUTION =
   '<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a> · ' +
   '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a>';
 
+// Free global Terrarium DEM (no API key) — used for hillshade relief
+export const DEM_TILES = ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'];
+export const DEM_ATTRIBUTION =
+  '<a href="https://mapterhorn.com/attribution" target="_blank">© Mapterhorn</a>';
+
 const NAME = ['coalesce', ['get', 'name:latin'], ['get', 'name']];
 
 // Exponential road width ramp: w px at z14, scaling 2x every ~2.4 zooms.
@@ -123,6 +128,16 @@ export function buildStyle(theme) {
     {
       id: 'park', type: 'fill', source: 'omt', 'source-layer': 'park',
       paint: { 'fill-color': c.park, 'fill-opacity': 0.8 },
+    },
+
+    // --- shaded relief (DEM hillshade), tinted per theme ---
+    // Sits under water/roads so lakes stay flat and labels stay crisp.
+    {
+      id: 'hillshade',
+      type: 'hillshade',
+      source: 'dem',
+      maxzoom: 15,
+      paint: hillshadePaint(theme),
     },
 
     // --- water ---
@@ -359,8 +374,32 @@ export function buildStyle(theme) {
     glyphs: 'glyphs://{fontstack}/{range}',
     sources: {
       omt: { type: 'vector', url: TILE_URL, attribution: ATTRIBUTION },
+      // Terrarium-encoded elevation for hillshade (Mapterhorn, free / keyless)
+      dem: {
+        type: 'raster-dem',
+        tiles: DEM_TILES,
+        tileSize: 512,
+        maxzoom: 12,
+        encoding: 'terrarium',
+        attribution: DEM_ATTRIBUTION,
+      },
     },
     layers,
+  };
+}
+
+// Theme-tinted hillshade: soft enough that filters stay stylized, strong
+// enough that hills and valleys read as real terrain.
+function hillshadePaint(theme) {
+  const hs = theme.hillshade || {};
+  const c = theme.colors;
+  return {
+    'hillshade-exaggeration': hs.exaggeration ?? 0.42,
+    'hillshade-shadow-color': hs.shadow || c.text || '#000000',
+    'hillshade-highlight-color': hs.highlight || c.textHalo || c.background || '#ffffff',
+    'hillshade-accent-color': hs.accent || c.buildingOutline || c.primaryCasing || c.text || '#444444',
+    'hillshade-illumination-direction': hs.direction ?? 315,
+    'hillshade-illumination-anchor': 'viewport',
   };
 }
 

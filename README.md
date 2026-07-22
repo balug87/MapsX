@@ -36,7 +36,9 @@ Then open http://localhost:8080. (Opening `index.html` from `file://` won't
 work — ES modules and the glyph protocol need an HTTP origin.)
 
 Internet access is required at runtime for map tiles
-(`tiles.openfreemap.org`) and place search (`nominatim.openstreetmap.org`).
+(`tiles.openfreemap.org`), elevation / hillshade
+(`tiles.mapterhorn.com`), and place search
+(`nominatim.openstreetmap.org`).
 Everything else — MapLibre, fonts, glyph rendering — is bundled and local.
 
 ## Why not Google Maps?

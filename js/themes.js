@@ -91,6 +91,13 @@ export const THEMES = [
     },
     exportFrame: 'parchment',
     effect: 'parchment',
+    // Warm carved-wood relief under the vellum
+    hillshade: {
+      exaggeration: 0.48,
+      shadow: '#43301a',
+      highlight: '#f2e7cd',
+      accent: '#8a6a42',
+    },
   },
   {
     id: 'terminal',
@@ -147,6 +154,12 @@ export const THEMES = [
     // Soft green blur on bright roads — reads as phosphor glow on a CRT
     roadGlow: true,
     exportFrame: 'terminal',
+    hillshade: {
+      exaggeration: 0.55,
+      shadow: '#021207',
+      highlight: '#5cffa8',
+      accent: '#0a6b48',
+    },
   },
   {
     id: 'blueprint',
@@ -201,6 +214,12 @@ export const THEMES = [
     },
     exportFrame: 'blueprint',
     effect: 'blueprint-grid',
+    hillshade: {
+      exaggeration: 0.4,
+      shadow: '#0b2c50',
+      highlight: '#eef5fd',
+      accent: '#7ea6cf',
+    },
   },
   {
     id: 'gazette',
@@ -256,6 +275,12 @@ export const THEMES = [
     },
     exportFrame: 'gazette',
     effect: 'halftone',
+    hillshade: {
+      exaggeration: 0.38,
+      shadow: '#1c1a15',
+      highlight: '#f2eee2',
+      accent: '#57534a',
+    },
   },
   {
     id: '8bit',
@@ -345,6 +370,13 @@ export const THEMES = [
     },
     effect: 'pixelate',
     exportFrame: 'arcade',
+    // Mild relief — too much fights the flat sprite look
+    hillshade: {
+      exaggeration: 0.28,
+      shadow: '#000000',
+      highlight: '#ffffff',
+      accent: '#404040',
+    },
   },
   // Palette + grid overlay from balug87/retro-lcd-design-language
   // (olive LCD screen, dark ink, 4px graph-paper mesh).
@@ -402,6 +434,12 @@ export const THEMES = [
     },
     effect: 'lcd-grid',
     exportFrame: 'lcd',
+    hillshade: {
+      exaggeration: 0.4,
+      shadow: '#2d3324',
+      highlight: '#b6c1a4',
+      accent: '#5c6450',
+    },
   },
 ];
 
