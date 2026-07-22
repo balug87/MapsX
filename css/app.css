@@ -212,6 +212,32 @@ body[data-effect='pixelate'] #sidebar,
 body[data-effect='pixelate'] #export-panel { font-size: 15px; }
 body[data-effect='pixelate'] #export-panel h2 { font-size: 13px; }
 
+/* Retro LCD: olive screen + 4px graph-paper mesh (from retro-lcd-design-language) */
+body[data-effect='lcd-grid'] {
+  /* Crisp LCD digits — no browser anti-alias soft edges */
+  -webkit-font-smoothing: none;
+}
+body[data-effect='lcd-grid'] #map-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  /* Horizontal + vertical 1px lines every 4px, multiply-blended over the map */
+  background-image:
+    repeating-linear-gradient(0deg, #2d33240f 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, #2d33240d 0 1px, transparent 1px 4px);
+  mix-blend-mode: multiply;
+}
+body[data-effect='lcd-grid'] #sidebar h1,
+body[data-effect='lcd-grid'] #mobile-bar .mobile-brand {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body[data-effect='lcd-grid'] .section-label {
+  letter-spacing: 0.18em;
+}
+
 /* --- crop frame --- */
 
 #crop-frame {

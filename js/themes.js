@@ -369,6 +369,63 @@ export const THEMES = [
     },
     exportFrame: 'candy',
   },
+  // Palette + grid overlay from balug87/retro-lcd-design-language
+  // (olive LCD screen, dark ink, 4px graph-paper mesh).
+  {
+    id: 'lcd',
+    name: 'Retro LCD',
+    blurb: 'Olive LCD screen, monospace readouts & graph-paper mesh',
+    fonts: {
+      // VT323 has latin-ext coverage for Czech labels; Share Tech Mono is UI-only
+      label: 'VT323 Regular',
+      italic: 'VT323 Regular',
+      display: 'VT323 Regular',
+    },
+    uiFonts: {
+      display: '"VT323", monospace',
+      body: '"Share Tech Mono", monospace',
+    },
+    colors: {
+      background: '#a7b198',
+      residential: '#9eaa8f',
+      wood: '#8f9b7c',
+      grass: '#96a385',
+      park: '#8b9878',
+      sand: '#b0ba9c',
+      wetland: '#8a967a',
+      cemetery: '#939f82',
+      water: '#6e785c',
+      waterLine: '#5c6450',
+      aeroway: '#a0ab90',
+      building: '#8b9679',
+      buildingOutline: '#2d3324',
+      path: '#5c6450',
+      minor: '#b6c1a4',
+      minorCasing: '#7c8568',
+      secondary: '#99a389',
+      secondaryCasing: '#5c6450',
+      primary: '#7c8568',
+      primaryCasing: '#2d3324',
+      motorway: '#5c6450',
+      motorwayCasing: '#2d3324',
+      rail: '#5c6450',
+      boundary: '#2d3324',
+      text: '#2d3324',
+      textHalo: '#a7b198',
+      waterText: '#2d3324',
+      poi: '#2d3324',
+      poiText: '#5c6450',
+    },
+    boundaryDash: [2, 2],
+    pathDash: [1, 2],
+    uiVars: {
+      '--bg': '#b6c1a4', '--panel': '#a7b198', '--panel-edge': '#8b9679',
+      '--ink': '#2d3324', '--muted': '#5c6450', '--accent': '#2d3324',
+      '--btn-bg': '#2d3324', '--btn-ink': '#a7b198', '--radius': '4px',
+    },
+    effect: 'lcd-grid',
+    exportFrame: 'lcd',
+  },
 ];
 
 export function getTheme(id) {

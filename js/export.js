@@ -78,6 +78,7 @@ export async function renderPrint(maplibregl, opts, view) {
     ctx.imageSmoothingEnabled = true;
 
     if (opts.theme.effect === 'scanlines') drawScanlines(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
+    if (opts.theme.effect === 'lcd-grid') drawLcdGrid(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
 
     const metersPerPx = metersPerPixel(view.center[1], zoom) / ratio;
     drawOverlays(ctx, opts, { mapX, mapY, mapPxW, mapPxH, pxW, pxH, margin, metersPerPx, bearing: view.bearing || 0 });
@@ -108,6 +109,21 @@ function drawScanlines(ctx, x, y, w, h, dpi) {
   ctx.fillStyle = 'rgba(0,0,0,0.16)';
   const step = Math.max(3, Math.round(dpi / 32));
   for (let yy = y; yy < y + h; yy += step) ctx.fillRect(x, yy, w, Math.max(1, step / 3));
+  ctx.restore();
+}
+
+// Graph-paper mesh matching the retro-lcd-design-language screen overlay
+// (1px lines every 4 CSS px, scaled up for print DPI).
+function drawLcdGrid(ctx, x, y, w, h, dpi) {
+  ctx.save();
+  const step = Math.max(4, Math.round((4 * dpi) / 96));
+  const line = Math.max(1, Math.round(dpi / 96));
+  // Horizontal lines (~6% ink opacity, like #2d33240f)
+  ctx.fillStyle = 'rgba(45, 51, 36, 0.06)';
+  for (let yy = y; yy < y + h; yy += step) ctx.fillRect(x, yy, w, line);
+  // Vertical lines (~5% ink opacity, like #2d33240d)
+  ctx.fillStyle = 'rgba(45, 51, 36, 0.05)';
+  for (let xx = x; xx < x + w; xx += step) ctx.fillRect(xx, y, line, h);
   ctx.restore();
 }
 
