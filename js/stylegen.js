@@ -290,7 +290,9 @@ export function buildStyle(theme) {
       filter: ['==', ['get', 'class'], 'city'],
       layout: {
         'text-field': NAME,
-        'text-font': [f.display],
+        // display first, then label — so faces like UnifrakturMaguntia that
+        // lack Czech glyphs fall back to the theme's label font in TinySDF
+        'text-font': [f.display, f.label],
         'text-size': ['interpolate', ['linear'], ['zoom'], 4, 12, 8, 18, 12, 26],
       },
       paint: { 'text-color': c.text, 'text-halo-color': c.textHalo, 'text-halo-width': 1.6 },
@@ -314,7 +316,7 @@ export function buildStyle(theme) {
       filter: ['==', ['get', 'class'], 'country'],
       layout: {
         'text-field': NAME,
-        'text-font': [f.display],
+        'text-font': [f.display, f.label],
         'text-size': ['interpolate', ['linear'], ['zoom'], 1, 12, 5, 22],
         'text-letter-spacing': 0.15,
       },

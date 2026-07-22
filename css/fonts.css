@@ -1,76 +1,179 @@
-/* Locally bundled fonts (from @fontsource, OFL-licensed). These families are
-   used both for the app chrome and — via the local glyph engine — for the
-   map labels themselves. */
+/* Locally bundled fonts (from @fontsource / Google Fonts, OFL-licensed).
+   These families are used both for the app chrome and — via the local glyph
+   engine — for the map labels themselves.
 
+   Each family ships a latin face plus a latin-ext face (unicode-range
+   U+0100–024F etc.) so Czech/Central-European diacritics like č / Ř / ů
+   render in the theme font instead of falling back to system sans-serif. */
+
+/* --- UnifrakturMaguntia (no latin-ext in the typeface; display layers
+     fall back to IM Fell English via the MapLibre text-font stack) --- */
 @font-face {
   font-family: 'UnifrakturMaguntia';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/unifrakturmaguntia-latin-400-normal.woff2') format('woff2');
 }
+
+/* --- IM Fell English --- */
 @font-face {
   font-family: 'IM Fell English';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/im-fell-english-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'IM Fell English';
+  font-style: normal;
+  font-weight: 400;
+  /* Built from the Google Fonts TTF (Fontsource has no latin-ext package) */
+  src: url('../fonts/im-fell-english-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: 'IM Fell English';
   font-style: italic;
   font-weight: 400;
   src: url('../fonts/im-fell-english-latin-400-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+@font-face {
+  font-family: 'IM Fell English';
+  font-style: italic;
+  font-weight: 400;
+  src: url('../fonts/im-fell-english-latin-ext-400-italic.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* --- VT323 --- */
 @font-face {
   font-family: 'VT323';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/vt323-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/vt323-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* --- Share Tech Mono (UI chrome for Terminal; map labels use VT323) --- */
 @font-face {
   font-family: 'Share Tech Mono';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/share-tech-mono-latin-400-normal.woff2') format('woff2');
 }
+
+/* --- Architects Daughter --- */
 @font-face {
   font-family: 'Architects Daughter';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/architects-daughter-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+@font-face {
+  font-family: 'Architects Daughter';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/architects-daughter-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* --- Playfair Display --- */
 @font-face {
   font-family: 'Playfair Display';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/playfair-display-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/playfair-display-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: 'Playfair Display';
   font-style: normal;
   font-weight: 700;
   src: url('../fonts/playfair-display-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/playfair-display-latin-ext-700-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* --- Special Elite --- */
 @font-face {
   font-family: 'Special Elite';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/special-elite-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+@font-face {
+  font-family: 'Special Elite';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/special-elite-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* --- Press Start 2P --- */
 @font-face {
   font-family: 'Press Start 2P';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/press-start-2p-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/press-start-2p-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* --- Quicksand --- */
 @font-face {
   font-family: 'Quicksand';
   font-style: normal;
   font-weight: 400;
   src: url('../fonts/quicksand-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/quicksand-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 @font-face {
   font-family: 'Quicksand';
   font-style: normal;
   font-weight: 600;
   src: url('../fonts/quicksand-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 600;
+  src: url('../fonts/quicksand-latin-ext-600-normal.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }

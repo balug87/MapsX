@@ -348,12 +348,175 @@ body[data-effect='pixelate'] #export-panel h2 { font-size: 13px; }
 /* maplibre attribution readability across themes */
 .maplibregl-ctrl-attrib { font-size: 10.5px; }
 
+/* Mobile chrome: hidden on desktop; shown in the media query below */
+#mobile-bar,
+#drawer-backdrop,
+#btn-drawer-close {
+  display: none;
+}
+
+/* --- mobile: full-screen map + slide-over filter drawer --- */
+
 @media (max-width: 720px) {
-  body { flex-direction: column; }
-  #sidebar {
-    width: 100%;
-    max-height: 45%;
-    border-right: none;
+  body {
+    flex-direction: column;
+    /* Leave room for the notch / home indicator on modern phones */
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  #mobile-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    height: 48px;
+    padding: 0 10px 0 6px;
+    background: var(--panel);
     border-bottom: 2px solid var(--panel-edge);
+    z-index: 25;
+  }
+
+  #mobile-bar .mobile-brand {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1;
+  }
+
+  #btn-menu {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: var(--radius);
+  }
+  #btn-menu:hover { background: var(--bg); }
+
+  /* Three-line hamburger icon built from CSS so it picks up theme ink color */
+  #btn-menu .menu-icon,
+  #btn-menu .menu-icon::before,
+  #btn-menu .menu-icon::after {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    position: relative;
+  }
+  #btn-menu .menu-icon::before,
+  #btn-menu .menu-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+  #btn-menu .menu-icon::before { top: -6px; }
+  #btn-menu .menu-icon::after { top: 6px; }
+
+  #drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 40;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  body.drawer-open #drawer-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Sidebar becomes an off-canvas drawer over the full-height map */
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(320px, 88vw);
+    max-height: none;
+    padding-top: calc(16px + env(safe-area-inset-top, 0));
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+    border-right: 2px solid var(--panel-edge);
+    border-bottom: none;
+    z-index: 50;
+    transform: translateX(-105%);
+    transition: transform 0.22s ease;
+    box-shadow: none;
+  }
+  body.drawer-open #sidebar {
+    transform: translateX(0);
+    box-shadow: 8px 0 28px rgba(0, 0, 0, 0.35);
+  }
+
+  .sidebar-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  #btn-drawer-close {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    margin: -6px -4px 0 0;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: var(--radius);
+  }
+  #btn-drawer-close:hover { color: var(--ink); background: var(--bg); }
+
+  #map-wrap {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Bigger tap targets on phones */
+  #search { padding: 12px 14px; font-size: 16px; }
+  .theme-card { padding: 12px 12px; min-height: 56px; }
+  .theme-card:hover { transform: none; }
+
+  /* Keep export / MapLibre chrome clear of the home indicator and each other */
+  #btn-export-open {
+    right: max(12px, env(safe-area-inset-right, 0));
+    bottom: max(52px, calc(40px + env(safe-area-inset-bottom, 0)));
+  }
+  #export-panel {
+    right: max(8px, env(safe-area-inset-right, 0));
+    left: max(8px, env(safe-area-inset-left, 0));
+    bottom: max(52px, calc(40px + env(safe-area-inset-bottom, 0)));
+    width: auto;
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+  }
+
+  .maplibregl-ctrl-top-right {
+    top: 4px;
+    right: max(4px, env(safe-area-inset-right, 0));
+  }
+  .maplibregl-ctrl-bottom-right {
+    bottom: max(4px, env(safe-area-inset-bottom, 0));
+    right: max(4px, env(safe-area-inset-right, 0));
+  }
+
+  #toast {
+    bottom: max(24px, calc(16px + env(safe-area-inset-bottom, 0)));
+  }
+
+  body[data-effect='pixelate'] #mobile-bar .mobile-brand {
+    font-size: 16px;
+    line-height: 1.2;
   }
 }
