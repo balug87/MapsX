@@ -90,8 +90,8 @@ export async function renderPrint(maplibregl, opts, view) {
     }
     if (opts.theme.effect === 'lcd-grid') drawLcdGrid(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
     if (opts.theme.effect === 'parchment') drawParchment(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
-    if (opts.theme.effect === 'halftone') drawHalftone(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
-    if (opts.theme.effect === 'blueprint-grid') drawBlueprintGrid(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
+    if (opts.theme.effect === 'halftone') drawInkBlots(ctx, mapX, mapY, mapPxW, mapPxH);
+    if (opts.theme.effect === 'blueprint-grid') drawBlueprintCreases(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
 
     const metersPerPx = metersPerPixel(view.center[1], zoom) / ratio;
     drawOverlays(ctx, opts, { mapX, mapY, mapPxW, mapPxH, pxW, pxH, margin, metersPerPx, bearing: view.bearing || 0 });
@@ -169,36 +169,77 @@ function drawParchment(ctx, x, y, w, h, dpi) {
   ctx.restore();
 }
 
-// Sparse newsprint dots for gazette prints
-function drawHalftone(ctx, x, y, w, h, dpi) {
+// Screen-fixed ink blots for gazette prints (same relative positions as CSS)
+function drawInkBlots(ctx, x, y, w, h) {
   ctx.save();
   ctx.fillStyle = 'rgba(210,200,175,0.12)';
   ctx.fillRect(x, y, w, h);
-  const step = Math.max(3, Math.round((3 * dpi) / 96));
-  const r = Math.max(0.6, step * 0.18);
-  ctx.fillStyle = 'rgba(40,35,25,0.22)';
-  for (let yy = y + step / 2; yy < y + h; yy += step) {
-    for (let xx = x + step / 2; xx < x + w; xx += step) {
-      ctx.beginPath();
-      ctx.arc(xx, yy, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
+  ctx.globalCompositeOperation = 'multiply';
+  const blots = [
+    { px: 0.14, py: 0.18, rx: 0.07, ry: 0.05, a: 0.42 },
+    { px: 0.78, py: 0.28, rx: 0.045, ry: 0.055, a: 0.36 },
+    { px: 0.36, py: 0.72, rx: 0.055, ry: 0.04, a: 0.34 },
+    { px: 0.88, py: 0.78, rx: 0.038, ry: 0.034, a: 0.3 },
+    { px: 0.52, py: 0.42, rx: 0.05, ry: 0.045, a: 0.26 },
+    { px: 0.08, py: 0.58, rx: 0.028, ry: 0.035, a: 0.28 },
+    { px: 0.62, py: 0.12, rx: 0.035, ry: 0.025, a: 0.24 },
+    { px: 0.24, py: 0.48, rx: 0.024, ry: 0.03, a: 0.2 },
+  ];
+  for (const b of blots) {
+    const cx = x + w * b.px;
+    const cy = y + h * b.py;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w * b.rx, h * b.ry));
+    g.addColorStop(0, `rgba(28,26,21,${b.a})`);
+    g.addColorStop(0.45, `rgba(28,26,21,${b.a * 0.4})`);
+    g.addColorStop(1, 'rgba(28,26,21,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, w * b.rx, h * b.ry, 0, 0, Math.PI * 2);
+    ctx.fill();
   }
   ctx.restore();
 }
 
-// Cyanotype drafting grid (coarse + fine) for blueprint prints
-function drawBlueprintGrid(ctx, x, y, w, h, dpi) {
+// Equidistant fold creases for blueprint prints (25/50/75%, map-area relative)
+function drawBlueprintCreases(ctx, x, y, w, h, dpi) {
   ctx.save();
+  // Faint drafting grid first
   const fine = Math.max(4, Math.round((6 * dpi) / 96));
-  const coarse = fine * 4;
   const line = Math.max(1, Math.round(dpi / 96));
-  ctx.fillStyle = 'rgba(220,235,250,0.07)';
-  for (let yy = y; yy < y + h; yy += fine) ctx.fillRect(x, yy, w, line);
-  for (let xx = x; xx < x + w; xx += fine) ctx.fillRect(xx, y, line, h);
-  ctx.fillStyle = 'rgba(180,210,240,0.14)';
-  for (let yy = y; yy < y + h; yy += coarse) ctx.fillRect(x, yy, w, line);
-  for (let xx = x; xx < x + w; xx += coarse) ctx.fillRect(xx, y, line, h);
+  ctx.fillStyle = 'rgba(180,210,240,0.1)';
+  for (let yy = y; yy < y + h; yy += fine * 4) ctx.fillRect(x, yy, w, line);
+  for (let xx = x; xx < x + w; xx += fine * 4) ctx.fillRect(xx, y, line, h);
+
+  const fracs = [0.25, 0.5, 0.75];
+  for (const f of fracs) {
+    const isMid = f === 0.5;
+    const ridge = isMid ? 2.5 : 1.8;
+    const shadowW = isMid ? 10 : 8;
+    const whiteA = isMid ? 0.88 : 0.75;
+    const shadowA = isMid ? 0.34 : 0.28;
+
+    // Vertical crease
+    const vx = x + w * f;
+    const vg = ctx.createLinearGradient(vx - shadowW, 0, vx + ridge, 0);
+    vg.addColorStop(0, 'rgba(8,30,60,0)');
+    vg.addColorStop(0.55, `rgba(8,30,60,${shadowA})`);
+    vg.addColorStop(0.75, 'rgba(8,30,60,0)');
+    vg.addColorStop(0.85, `rgba(255,255,255,${whiteA})`);
+    vg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(vx - shadowW, y, shadowW + ridge * 2, h);
+
+    // Horizontal crease
+    const hy = y + h * f;
+    const hg = ctx.createLinearGradient(0, hy - shadowW, 0, hy + ridge);
+    hg.addColorStop(0, 'rgba(8,30,60,0)');
+    hg.addColorStop(0.55, `rgba(8,30,60,${shadowA * 0.9})`);
+    hg.addColorStop(0.75, 'rgba(8,30,60,0)');
+    hg.addColorStop(0.85, `rgba(255,255,255,${whiteA * 0.9})`);
+    hg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = hg;
+    ctx.fillRect(x, hy - shadowW, w, shadowW + ridge * 2);
+  }
   ctx.restore();
 }
 

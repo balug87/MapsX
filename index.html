@@ -7,7 +7,8 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>" />
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
   <link rel="stylesheet" href="css/fonts.css" />
-  <link rel="stylesheet" href="css/app.css" />
+  <!-- Cache-bust so GitHub Pages picks up overlay CSS changes after deploy -->
+  <link rel="stylesheet" href="css/app.css?v=creases-blots-1" />
 </head>
 <body>
   <!-- Compact top bar: phones only (see app.css). Menu opens the filter drawer. -->

@@ -283,14 +283,14 @@ body[data-effect='parchment'] #map-wrap::after {
     repeating-linear-gradient(35deg, rgba(60, 35, 10, 0.05) 0 1px, transparent 1px 7px);
 }
 
-/* Gazette newsprint: soft paper wash + sparse halftone dots */
+/* Gazette: soft paper wash + fixed ink blots (no motion; screen-locked) */
 body[data-effect='halftone'] #map-wrap::before {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 4;
-  background: rgba(210, 200, 175, 0.16);
+  background: rgba(210, 200, 175, 0.12);
   mix-blend-mode: multiply;
 }
 body[data-effect='halftone'] #map-wrap::after {
@@ -299,31 +299,55 @@ body[data-effect='halftone'] #map-wrap::after {
   inset: 0;
   pointer-events: none;
   z-index: 5;
-  opacity: 0.65;
+  /* % positions stay put when the map zooms — soft ink, still clearly visible */
+  background:
+    radial-gradient(ellipse 90px 68px at 14% 18%, rgba(20, 18, 14, 0.42) 0%, rgba(20, 18, 14, 0.18) 40%, transparent 74%),
+    radial-gradient(ellipse 58px 74px at 78% 28%, rgba(20, 18, 14, 0.36) 0%, rgba(20, 18, 14, 0.14) 42%, transparent 72%),
+    radial-gradient(ellipse 72px 52px at 36% 72%, rgba(20, 18, 14, 0.34) 0%, rgba(20, 18, 14, 0.12) 45%, transparent 74%),
+    radial-gradient(ellipse 48px 42px at 88% 78%, rgba(20, 18, 14, 0.3) 0%, transparent 70%),
+    radial-gradient(ellipse 64px 58px at 52% 42%, rgba(20, 18, 14, 0.26) 0%, transparent 68%),
+    radial-gradient(ellipse 36px 46px at 8% 58%, rgba(20, 18, 14, 0.28) 0%, transparent 72%),
+    radial-gradient(ellipse 44px 32px at 62% 12%, rgba(20, 18, 14, 0.24) 0%, transparent 70%),
+    radial-gradient(ellipse 30px 38px at 24% 48%, rgba(20, 18, 14, 0.2) 0%, transparent 68%);
   mix-blend-mode: multiply;
-  background-image: radial-gradient(circle, rgba(40, 35, 25, 0.4) 0.7px, transparent 0.9px);
-  background-size: 4px 4px;
 }
 
-/* Blueprint drafting grid — cyan/white lines at drafting spacing */
+/* Blueprint: faint grid + equidistant white fold creases (screen-locked, no motion) */
+body[data-effect='blueprint-grid'] #map-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(180, 210, 240, 0.12) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, rgba(180, 210, 240, 0.1) 0 1px, transparent 1px 24px);
+  mix-blend-mode: screen;
+}
 body[data-effect='blueprint-grid'] #map-wrap::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 5;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(180, 210, 240, 0.22) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(90deg, rgba(180, 210, 240, 0.2) 0 1px, transparent 1px 24px),
-    repeating-linear-gradient(0deg, rgba(220, 235, 250, 0.12) 0 1px, transparent 1px 6px),
-    repeating-linear-gradient(90deg, rgba(220, 235, 250, 0.1) 0 1px, transparent 1px 6px);
-  mix-blend-mode: screen;
+  /* Folds at 25% / 50% / 75% — equal spacing, viewport-fixed, no animation */
+  background:
+    linear-gradient(90deg, transparent calc(25% - 9px), rgba(8, 30, 60, 0.28) calc(25% - 2px), transparent 25%),
+    linear-gradient(90deg, transparent calc(50% - 10px), rgba(8, 30, 60, 0.34) calc(50% - 2px), transparent 50%),
+    linear-gradient(90deg, transparent calc(75% - 9px), rgba(8, 30, 60, 0.28) calc(75% - 2px), transparent 75%),
+    linear-gradient(180deg, transparent calc(25% - 9px), rgba(8, 30, 60, 0.26) calc(25% - 2px), transparent 25%),
+    linear-gradient(180deg, transparent calc(50% - 10px), rgba(8, 30, 60, 0.32) calc(50% - 2px), transparent 50%),
+    linear-gradient(180deg, transparent calc(75% - 9px), rgba(8, 30, 60, 0.26) calc(75% - 2px), transparent 75%),
+    linear-gradient(90deg, transparent calc(25% - 2px), rgba(255, 255, 255, 0.75) 25%, transparent calc(25% + 2px)),
+    linear-gradient(90deg, transparent calc(50% - 2.5px), rgba(255, 255, 255, 0.88) 50%, transparent calc(50% + 2.5px)),
+    linear-gradient(90deg, transparent calc(75% - 2px), rgba(255, 255, 255, 0.75) 75%, transparent calc(75% + 2px)),
+    linear-gradient(180deg, transparent calc(25% - 2px), rgba(255, 255, 255, 0.7) 25%, transparent calc(25% + 2px)),
+    linear-gradient(180deg, transparent calc(50% - 2.5px), rgba(255, 255, 255, 0.82) 50%, transparent calc(50% + 2.5px)),
+    linear-gradient(180deg, transparent calc(75% - 2px), rgba(255, 255, 255, 0.7) 75%, transparent calc(75% + 2px));
 }
 
 /* --- living atmospheres (screen only; exports stay still) --- */
-/* Motion is ON by default — many Macs/iPhones have OS "Reduce Motion"
-   enabled, which would otherwise hide these entirely. When the user
-   prefers reduced motion, we keep a gentler pulse instead of freezing. */
+/* Blueprint folds + Gazette ink blots stay static (no motion). */
 
 body[data-effect='parchment'] #map-wrap::before {
   animation: mapsx-dust-drift 18s linear infinite, mapsx-vignette-breathe 4s ease-in-out infinite;
@@ -338,16 +362,9 @@ body[data-effect='scanlines'] #map-wrap::after {
   background-size: 100% 8px;
   animation: mapsx-scan-drift 1.6s linear infinite, mapsx-crt-flicker 2.2s ease-in-out infinite;
 }
-body[data-effect='halftone'] #map-wrap::after {
-  animation: mapsx-halftone-crawl 8s linear infinite;
-}
-body[data-effect='blueprint-grid'] #map-wrap::after {
-  animation: mapsx-grid-drift 16s linear infinite;
-}
 body[data-effect='lcd-grid'] #map-wrap::after {
   animation: mapsx-lcd-refresh 1.1s steps(2, end) infinite;
 }
-/* 8-bit: drifting CRT-ish shadow band across the pixel canvas */
 body[data-effect='pixelate'] #map-wrap::after {
   content: '';
   position: absolute;
@@ -391,14 +408,6 @@ body[data-effect='pixelate'] #map-wrap::after {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
 }
-@keyframes mapsx-halftone-crawl {
-  from { background-position: 0 0; }
-  to { background-position: 16px 16px; }
-}
-@keyframes mapsx-grid-drift {
-  from { background-position: 0 0, 0 0, 0 0, 0 0; }
-  to { background-position: 0 48px, 48px 0, 0 12px, 12px 0; }
-}
 @keyframes mapsx-lcd-refresh {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
@@ -408,16 +417,11 @@ body[data-effect='pixelate'] #map-wrap::after {
   to { background-position: 0 100%; }
 }
 
-/* Soften (don't kill) motion when OS/browser asks for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   body[data-effect='parchment'] #map-wrap::before,
   body[data-effect='parchment'] #map-wrap::after,
   body[data-effect='scanlines'] #map-wrap::before,
-  body[data-effect='scanlines'] #map-wrap::after,
-  body[data-effect='halftone'] #map-wrap::after,
-  body[data-effect='blueprint-grid'] #map-wrap::after,
-  body[data-effect='lcd-grid'] #map-wrap::after,
-  body[data-effect='pixelate'] #map-wrap::after {
+  body[data-effect='scanlines'] #map-wrap::after {
     animation-duration: 28s, 18s;
     animation-timing-function: linear;
   }
