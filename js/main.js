@@ -3,6 +3,7 @@
 import { THEMES, getTheme } from './themes.js';
 import { buildStyle } from './stylegen.js';
 import { registerGlyphProtocol } from './glyphs.js';
+import { applyLandPatterns } from './patterns.js';
 import { initSearch } from './search.js';
 import { PAPER_SIZES, paperAspect, renderPrint, downloadCanvas, openPrintView } from './export.js';
 
@@ -79,6 +80,9 @@ map.on('error', (e) => {
   }
   console.warn('map error:', e.error || e);
 });
+
+// After every style load, register wood/wetland hatch images and show overlays
+map.on('style.load', () => applyLandPatterns(map, theme));
 
 // --- theming (map + app chrome) ---
 

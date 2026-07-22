@@ -190,6 +190,15 @@ body.busy { cursor: progress; }
 #map { position: absolute; inset: 0; background: var(--bg); }
 
 /* terminal scanline overlay (screen only; export draws its own) */
+body[data-effect='scanlines'] #map-wrap::before {
+  /* Soft CRT vignette behind the scanlines */
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 0, 0, 0.45) 100%);
+}
 body[data-effect='scanlines'] #map-wrap::after {
   content: '';
   position: absolute;
@@ -203,7 +212,13 @@ body[data-effect='scanlines'] #map-wrap::after {
   );
   mix-blend-mode: multiply;
 }
-body[data-effect='scanlines'] #sidebar { text-shadow: 0 0 6px rgba(64, 255, 150, 0.35); }
+body[data-effect='scanlines'] #sidebar {
+  text-shadow: 0 0 6px rgba(64, 255, 150, 0.35);
+}
+body[data-effect='scanlines'] #sidebar h1,
+body[data-effect='scanlines'] .theme-card.active .tname {
+  text-shadow: 0 0 10px rgba(50, 255, 136, 0.55);
+}
 
 /* 8-bit: nearest-neighbor upscale of the low-res canvas */
 body[data-effect='pixelate'] .maplibregl-canvas { image-rendering: pixelated; }
@@ -237,6 +252,69 @@ body[data-effect='lcd-grid'] #mobile-bar .mobile-brand {
 body[data-effect='lcd-grid'] .section-label {
   letter-spacing: 0.18em;
 }
+
+/* Medieval parchment: warm edge vignette + subtle fiber noise */
+body[data-effect='parchment'] #map-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(90, 55, 20, 0.22) 100%);
+}
+body[data-effect='parchment'] #map-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  /* Fine grain without an image asset — layered noise-like gradients */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(80, 50, 20, 0.04) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(80, 50, 20, 0.03) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(35deg, rgba(60, 35, 10, 0.025) 0 1px, transparent 1px 7px);
+}
+
+/* Gazette newsprint: soft paper wash + sparse halftone dots */
+body[data-effect='halftone'] #map-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background: rgba(210, 200, 175, 0.12);
+  mix-blend-mode: multiply;
+}
+body[data-effect='halftone'] #map-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  /* 3px dotted grid ≈ cheap newsprint halftone */
+  background-image: radial-gradient(circle, rgba(40, 35, 25, 0.28) 0.55px, transparent 0.7px);
+  background-size: 3px 3px;
+}
+
+/* Blueprint drafting grid — cyan/white lines at drafting spacing */
+body[data-effect='blueprint-grid'] #map-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(180, 210, 240, 0.14) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, rgba(180, 210, 240, 0.12) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(0deg, rgba(220, 235, 250, 0.08) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(90deg, rgba(220, 235, 250, 0.07) 0 1px, transparent 1px 6px);
+  mix-blend-mode: screen;
+}
+
 
 /* --- crop frame --- */
 

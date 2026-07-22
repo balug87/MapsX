@@ -3,6 +3,7 @@
 // title cartouche, compass rose, scale bar, attribution) on a 2D canvas.
 
 import { buildStyle } from './stylegen.js';
+import { applyLandPatterns } from './patterns.js';
 
 export const PAPER_SIZES = {
   a5: { name: 'A5', w: 5.83, h: 8.27 },
@@ -59,6 +60,12 @@ export async function renderPrint(maplibregl, opts, view) {
   });
 
   try {
+    // Wait for style so land patterns can register before tiles paint
+    await new Promise((resolve) => {
+      if (exportMap.isStyleLoaded()) resolve();
+      else exportMap.once('style.load', resolve);
+    });
+    applyLandPatterns(exportMap, opts.theme);
     await waitForIdle(exportMap);
     const mapCanvas = exportMap.getCanvas();
 
@@ -77,8 +84,14 @@ export async function renderPrint(maplibregl, opts, view) {
     ctx.drawImage(mapCanvas, mapX, mapY, mapPxW, mapPxH);
     ctx.imageSmoothingEnabled = true;
 
-    if (opts.theme.effect === 'scanlines') drawScanlines(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
+    if (opts.theme.effect === 'scanlines') {
+      drawCrtVignette(ctx, mapX, mapY, mapPxW, mapPxH);
+      drawScanlines(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
+    }
     if (opts.theme.effect === 'lcd-grid') drawLcdGrid(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
+    if (opts.theme.effect === 'parchment') drawParchment(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
+    if (opts.theme.effect === 'halftone') drawHalftone(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
+    if (opts.theme.effect === 'blueprint-grid') drawBlueprintGrid(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
 
     const metersPerPx = metersPerPixel(view.center[1], zoom) / ratio;
     drawOverlays(ctx, opts, { mapX, mapY, mapPxW, mapPxH, pxW, pxH, margin, metersPerPx, bearing: view.bearing || 0 });
@@ -112,6 +125,17 @@ function drawScanlines(ctx, x, y, w, h, dpi) {
   ctx.restore();
 }
 
+// Soft CRT edge darkening behind terminal scanlines
+function drawCrtVignette(ctx, x, y, w, h) {
+  ctx.save();
+  const g = ctx.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * 0.25, x + w / 2, y + h / 2, Math.max(w, h) * 0.72);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, 'rgba(0,0,0,0.42)');
+  ctx.fillStyle = g;
+  ctx.fillRect(x, y, w, h);
+  ctx.restore();
+}
+
 // Graph-paper mesh matching the retro-lcd-design-language screen overlay
 // (1px lines every 4 CSS px, scaled up for print DPI).
 function drawLcdGrid(ctx, x, y, w, h, dpi) {
@@ -124,6 +148,57 @@ function drawLcdGrid(ctx, x, y, w, h, dpi) {
   // Vertical lines (~5% ink opacity, like #2d33240d)
   ctx.fillStyle = 'rgba(45, 51, 36, 0.05)';
   for (let xx = x; xx < x + w; xx += step) ctx.fillRect(xx, y, line, h);
+  ctx.restore();
+}
+
+// Warm edge vignette + fine fiber grain for medieval parchment prints
+function drawParchment(ctx, x, y, w, h, dpi) {
+  ctx.save();
+  const g = ctx.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * 0.3, x + w / 2, y + h / 2, Math.max(w, h) * 0.75);
+  g.addColorStop(0, 'rgba(90,55,20,0)');
+  g.addColorStop(1, 'rgba(90,55,20,0.2)');
+  ctx.fillStyle = g;
+  ctx.fillRect(x, y, w, h);
+
+  const step = Math.max(2, Math.round((3 * dpi) / 96));
+  const line = Math.max(1, Math.round(dpi / 96));
+  ctx.fillStyle = 'rgba(80,50,20,0.04)';
+  for (let yy = y; yy < y + h; yy += step) ctx.fillRect(x, yy, w, line);
+  ctx.fillStyle = 'rgba(80,50,20,0.03)';
+  for (let xx = x; xx < x + w; xx += Math.round(step * 1.6)) ctx.fillRect(xx, y, line, h);
+  ctx.restore();
+}
+
+// Sparse newsprint dots for gazette prints
+function drawHalftone(ctx, x, y, w, h, dpi) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(210,200,175,0.12)';
+  ctx.fillRect(x, y, w, h);
+  const step = Math.max(3, Math.round((3 * dpi) / 96));
+  const r = Math.max(0.6, step * 0.18);
+  ctx.fillStyle = 'rgba(40,35,25,0.22)';
+  for (let yy = y + step / 2; yy < y + h; yy += step) {
+    for (let xx = x + step / 2; xx < x + w; xx += step) {
+      ctx.beginPath();
+      ctx.arc(xx, yy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// Cyanotype drafting grid (coarse + fine) for blueprint prints
+function drawBlueprintGrid(ctx, x, y, w, h, dpi) {
+  ctx.save();
+  const fine = Math.max(4, Math.round((6 * dpi) / 96));
+  const coarse = fine * 4;
+  const line = Math.max(1, Math.round(dpi / 96));
+  ctx.fillStyle = 'rgba(220,235,250,0.07)';
+  for (let yy = y; yy < y + h; yy += fine) ctx.fillRect(x, yy, w, line);
+  for (let xx = x; xx < x + w; xx += fine) ctx.fillRect(xx, y, line, h);
+  ctx.fillStyle = 'rgba(180,210,240,0.14)';
+  for (let yy = y; yy < y + h; yy += coarse) ctx.fillRect(x, yy, w, line);
+  for (let xx = x; xx < x + w; xx += coarse) ctx.fillRect(xx, y, line, h);
   ctx.restore();
 }
 
@@ -142,13 +217,21 @@ function drawOverlays(ctx, opts, g) {
     ctx.lineWidth = line;
     ctx.strokeRect(g.mapX - line * 7, g.mapY - line * 7, g.mapPxW + line * 14, g.mapPxH + line * 14);
 
+    // Theme-specific outer chrome (beyond the shared double-rule)
     if (t.exportFrame === 'parchment' || t.exportFrame === 'gazette') {
       drawCornerFlourishes(ctx, g, ink, dpi);
+      if (t.exportFrame === 'parchment') drawParchmentCartouche(ctx, g, ink, dpi, opts.title, t);
     } else if (t.exportFrame === 'arcade') {
       drawPixelCorners(ctx, g, ink, dpi);
+    } else if (t.exportFrame === 'blueprint') {
+      drawBlueprintTitleBlock(ctx, g, ink, dpi, opts.title);
+    } else if (t.exportFrame === 'terminal') {
+      drawTerminalBezel(ctx, g, ink, dpi);
+    } else if (t.exportFrame === 'lcd') {
+      drawLcdChassis(ctx, g, ink, ui, dpi);
     }
 
-    if (opts.title) {
+    if (opts.title && t.exportFrame !== 'blueprint' && t.exportFrame !== 'parchment') {
       ctx.fillStyle = ink;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -186,7 +269,7 @@ function drawOverlays(ctx, opts, g) {
 }
 
 function drawCornerFlourishes(ctx, g, ink, dpi) {
-  const s = Math.round(dpi * 0.16);
+  const s = Math.round(dpi * 0.18);
   const o = Math.max(2, Math.round(dpi / 150)) * 7;
   ctx.save();
   ctx.strokeStyle = ink;
@@ -198,14 +281,45 @@ function drawCornerFlourishes(ctx, g, ink, dpi) {
     [g.mapX + g.mapPxW + o, g.mapY + g.mapPxH + o, -1, -1],
   ];
   for (const [x, y, dx, dy] of corners) {
+    // Outer curve
     ctx.beginPath();
     ctx.moveTo(x + dx * s, y);
     ctx.quadraticCurveTo(x + dx * s * 0.45, y + dy * s * 0.45, x, y + dy * s);
     ctx.stroke();
+    // Inner echo curve for richer cartouche corners
     ctx.beginPath();
-    ctx.arc(x + dx * s * 0.55, y + dy * s * 0.55, s * 0.1, 0, Math.PI * 2);
+    ctx.moveTo(x + dx * s * 0.72, y + dy * s * 0.12);
+    ctx.quadraticCurveTo(x + dx * s * 0.4, y + dy * s * 0.4, x + dx * s * 0.12, y + dy * s * 0.72);
     ctx.stroke();
+    // Decorative dots
+    ctx.beginPath();
+    ctx.arc(x + dx * s * 0.55, y + dy * s * 0.55, s * 0.09, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x + dx * s * 0.28, y + dy * s * 0.28, s * 0.05, 0, Math.PI * 2);
+    ctx.fillStyle = ink;
+    ctx.fill();
   }
+  ctx.restore();
+}
+
+// Small title banner for parchment prints (drawn in the top margin)
+function drawParchmentCartouche(ctx, g, ink, dpi, title, theme) {
+  if (!title) return;
+  const cx = g.pxW / 2;
+  const cy = g.margin + dpi * 0.22;
+  const tw = Math.min(g.mapPxW * 0.7, Math.round(dpi * 3.2));
+  const th = Math.round(dpi * 0.34);
+  ctx.save();
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = Math.max(1, Math.round(dpi / 150));
+  ctx.strokeRect(cx - tw / 2, cy - th / 2, tw, th);
+  ctx.strokeRect(cx - tw / 2 + dpi * 0.04, cy - th / 2 + dpi * 0.04, tw - dpi * 0.08, th - dpi * 0.08);
+  ctx.fillStyle = ink;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `${Math.round(dpi * 0.22)}px ${theme.uiFonts.display}`;
+  ctx.fillText(title, cx, cy, tw - dpi * 0.2);
   ctx.restore();
 }
 
@@ -222,10 +336,94 @@ function drawPixelCorners(ctx, g, ink, dpi) {
     [g.mapX + g.mapPxW + off, g.mapY + g.mapPxH + off, -1, -1],
   ];
   for (const [x, y, dx, dy] of corners) {
-    for (const [px, py] of [[0, 0], [1, 0], [2, 0], [0, 1], [0, 2], [1, 1]]) {
+    // Slightly richer staircase than before (extra step)
+    for (const [px, py] of [[0, 0], [1, 0], [2, 0], [3, 0], [0, 1], [0, 2], [0, 3], [1, 1], [2, 1], [1, 2]]) {
       ctx.fillRect(x + dx * px * u - (dx < 0 ? u : 0), y + dy * py * u - (dy < 0 ? u : 0), u, u);
     }
   }
+  ctx.restore();
+}
+
+// Drafting-table title plate in the lower-right corner
+function drawBlueprintTitleBlock(ctx, g, ink, dpi, title) {
+  const bw = Math.round(dpi * 2.1);
+  const bh = Math.round(dpi * 0.85);
+  const pad = Math.round(dpi * 0.08);
+  const x = g.mapX + g.mapPxW - bw - Math.round(dpi * 0.15);
+  const y = g.mapY + g.mapPxH - bh - Math.round(dpi * 0.15);
+  ctx.save();
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = Math.max(1, Math.round(dpi / 120));
+  ctx.strokeRect(x, y, bw, bh);
+  ctx.strokeRect(x + pad * 0.5, y + pad * 0.5, bw - pad, bh - pad);
+  // Divider lines inside the plate
+  ctx.beginPath();
+  ctx.moveTo(x + pad, y + bh * 0.38);
+  ctx.lineTo(x + bw - pad, y + bh * 0.38);
+  ctx.moveTo(x + bw * 0.55, y + bh * 0.38);
+  ctx.lineTo(x + bw * 0.55, y + bh - pad);
+  ctx.stroke();
+  ctx.fillStyle = ink;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.font = `${Math.round(dpi * 0.11)}px "Architects Daughter", cursive`;
+  ctx.fillText(title || 'MAP SHEET', x + pad * 1.4, y + bh * 0.22, bw - pad * 3);
+  ctx.font = `${Math.round(dpi * 0.09)}px "Architects Daughter", cursive`;
+  ctx.fillText('SHEET 1 / 1', x + pad * 1.4, y + bh * 0.62);
+  ctx.fillText('SCALE AS SHOWN', x + bw * 0.58, y + bh * 0.62);
+  ctx.restore();
+}
+
+// Phosphor CRT lip / bezel around the terminal map area
+function drawTerminalBezel(ctx, g, ink, dpi) {
+  const o = Math.round(dpi * 0.08);
+  ctx.save();
+  ctx.strokeStyle = ink;
+  ctx.globalAlpha = 0.85;
+  ctx.lineWidth = Math.max(2, Math.round(dpi / 90));
+  ctx.strokeRect(g.mapX - o, g.mapY - o, g.mapPxW + o * 2, g.mapPxH + o * 2);
+  // Inner glow lip
+  ctx.globalAlpha = 0.35;
+  ctx.lineWidth = Math.max(1, Math.round(dpi / 180));
+  ctx.strokeRect(g.mapX - o * 0.35, g.mapY - o * 0.35, g.mapPxW + o * 0.7, g.mapPxH + o * 0.7);
+  // Corner ticks
+  ctx.globalAlpha = 0.9;
+  const tick = Math.round(dpi * 0.12);
+  const corners = [
+    [g.mapX - o, g.mapY - o, 1, 1],
+    [g.mapX + g.mapPxW + o, g.mapY - o, -1, 1],
+    [g.mapX - o, g.mapY + g.mapPxH + o, 1, -1],
+    [g.mapX + g.mapPxW + o, g.mapY + g.mapPxH + o, -1, -1],
+  ];
+  ctx.lineWidth = Math.max(2, Math.round(dpi / 100));
+  for (const [x, y, dx, dy] of corners) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + dy * tick);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + dx * tick, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// Olive LCD chassis: thicker outer band + recessed screen lip
+function drawLcdChassis(ctx, g, ink, ui, dpi) {
+  const o = Math.round(dpi * 0.1);
+  ctx.save();
+  // Outer chassis fill in the margin ring (already panel-colored; darken a band)
+  ctx.fillStyle = ui['--bg'] || '#b6c1a4';
+  ctx.globalAlpha = 0.55;
+  ctx.fillRect(g.mapX - o * 1.6, g.mapY - o * 1.6, g.mapPxW + o * 3.2, o * 1.2);
+  ctx.fillRect(g.mapX - o * 1.6, g.mapY + g.mapPxH + o * 0.4, g.mapPxW + o * 3.2, o * 1.2);
+  ctx.fillRect(g.mapX - o * 1.6, g.mapY - o * 0.4, o * 1.2, g.mapPxH + o * 0.8);
+  ctx.fillRect(g.mapX + g.mapPxW + o * 0.4, g.mapY - o * 0.4, o * 1.2, g.mapPxH + o * 0.8);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = ink;
+  ctx.lineWidth = Math.max(2, Math.round(dpi / 80));
+  ctx.strokeRect(g.mapX - o, g.mapY - o, g.mapPxW + o * 2, g.mapPxH + o * 2);
+  ctx.lineWidth = Math.max(1, Math.round(dpi / 150));
+  ctx.globalAlpha = 0.5;
+  ctx.strokeRect(g.mapX - o * 0.35, g.mapY - o * 0.35, g.mapPxW + o * 0.7, g.mapPxH + o * 0.7);
   ctx.restore();
 }
 

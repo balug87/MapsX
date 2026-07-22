@@ -103,8 +103,8 @@ test('parseFontName splits family, weight and style', () => {
     { family: 'Playfair Display', weight: '700', style: 'normal' });
   assert.deepEqual(parseFontName('IM Fell English Italic'),
     { family: 'IM Fell English', weight: '400', style: 'italic' });
-  assert.deepEqual(parseFontName('Quicksand SemiBold'),
-    { family: 'Quicksand', weight: '600', style: 'normal' });
+  assert.deepEqual(parseFontName('Press Start 2P Regular'),
+    { family: 'Press Start 2P', weight: '400', style: 'normal' });
   assert.deepEqual(parseFontName('Noto Sans Bold Italic'),
     { family: 'Noto Sans', weight: '700', style: 'italic' });
   // a bare family name never eats its only word

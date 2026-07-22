@@ -64,6 +64,8 @@ function poiCharExpression(theme) {
 export function buildStyle(theme) {
   const c = theme.colors;
   const f = theme.fonts;
+  // Gazette uses Special Elite on roads/POIs; other themes keep the label face
+  const detailFont = f.typewriter || f.label;
 
   const layers = [
     { id: 'background', type: 'background', paint: { 'background-color': c.background } },
@@ -73,6 +75,16 @@ export function buildStyle(theme) {
       id: 'landcover-wood', type: 'fill', source: 'omt', 'source-layer': 'landcover',
       filter: ['in', ['get', 'class'], ['literal', ['wood', 'forest']]],
       paint: { 'fill-color': c.wood, 'fill-opacity': 0.85, 'fill-antialias': false },
+    },
+    // Hatch overlay — image registered at runtime via patterns.js
+    {
+      id: 'landcover-wood-pattern', type: 'fill', source: 'omt', 'source-layer': 'landcover',
+      filter: ['in', ['get', 'class'], ['literal', ['wood', 'forest']]],
+      layout: { visibility: 'none' },
+      paint: {
+        'fill-opacity': 0.55,
+        'fill-antialias': false,
+      },
     },
     {
       id: 'landcover-grass', type: 'fill', source: 'omt', 'source-layer': 'landcover',
@@ -88,6 +100,15 @@ export function buildStyle(theme) {
       id: 'landcover-wetland', type: 'fill', source: 'omt', 'source-layer': 'landcover',
       filter: ['==', ['get', 'class'], 'wetland'],
       paint: { 'fill-color': c.wetland, 'fill-opacity': 0.7, 'fill-antialias': false },
+    },
+    {
+      id: 'landcover-wetland-pattern', type: 'fill', source: 'omt', 'source-layer': 'landcover',
+      filter: ['==', ['get', 'class'], 'wetland'],
+      layout: { visibility: 'none' },
+      paint: {
+        'fill-opacity': 0.6,
+        'fill-antialias': false,
+      },
     },
     {
       id: 'landuse-residential', type: 'fill', source: 'omt', 'source-layer': 'landuse',
@@ -224,7 +245,7 @@ export function buildStyle(theme) {
       layout: {
         'symbol-placement': 'line',
         'text-field': NAME,
-        'text-font': [f.label],
+        'text-font': [detailFont],
         'text-size': ['interpolate', ['linear'], ['zoom'], 13, 10, 18, 15],
       },
       paint: { 'text-color': c.text, 'text-halo-color': c.textHalo, 'text-halo-width': 1.4, 'text-opacity': 0.9 },
@@ -237,7 +258,7 @@ export function buildStyle(theme) {
       filter: ['<=', ['coalesce', ['get', 'rank'], 30], ['step', ['zoom'], 14, 15, 25, 16, 100]],
       layout: {
         'text-field': poiCharExpression(theme),
-        'text-font': [f.label],
+        'text-font': [detailFont],
         'text-size': ['interpolate', ['linear'], ['zoom'], 14, 12, 17, 17],
         'text-padding': 6,
       },
@@ -249,7 +270,7 @@ export function buildStyle(theme) {
       filter: ['<=', ['coalesce', ['get', 'rank'], 30], 25],
       layout: {
         'text-field': NAME,
-        'text-font': [f.label],
+        'text-font': [detailFont],
         'text-size': 10.5,
         'text-offset': [0, 1.1],
         'text-anchor': 'top',
@@ -363,6 +384,8 @@ function roadPair(theme, id, classes, fill, casing, w14, minzoom) {
   ];
   const layers = [];
   const transparentCasing = casing === 'rgba(0,0,0,0)';
+  // 8-bit (and similar) themes can thicken casings for chunkier roads
+  const casingExtra = theme.roadCasingExtra || 0;
   if (!transparentCasing) {
     layers.push({
       id: `${id}-casing`, type: 'line', source: 'omt', 'source-layer': 'transportation',
@@ -371,15 +394,24 @@ function roadPair(theme, id, classes, fill, casing, w14, minzoom) {
       paint: {
         'line-color': casing,
         'line-width': ['interpolate', ['exponential', 1.4], ['zoom'],
-          6, w14 * 0.12 + 0.6, 10, w14 * 0.3 + 0.8, 14, w14 + 1.6, 18, w14 * 5 + 2.5],
+          6, w14 * 0.12 + 0.6 + casingExtra * 0.2,
+          10, w14 * 0.3 + 0.8 + casingExtra * 0.35,
+          14, w14 + 1.6 + casingExtra,
+          18, w14 * 5 + 2.5 + casingExtra * 1.5],
       },
     });
+  }
+  const fillPaint = { 'line-color': fill, 'line-width': roadWidth(w14) };
+  // Terminal phosphor glow: soft blur on the bright road fill
+  if (theme.roadGlow) {
+    fillPaint['line-blur'] = ['interpolate', ['linear'], ['zoom'], 10, 0.4, 16, 1.6];
+    fillPaint['line-opacity'] = 0.95;
   }
   layers.push({
     id, type: 'line', source: 'omt', 'source-layer': 'transportation',
     minzoom, filter,
     layout: { 'line-cap': transparentCasing ? 'round' : 'butt', 'line-join': 'round' },
-    paint: { 'line-color': fill, 'line-width': roadWidth(w14) },
+    paint: fillPaint,
   });
   return layers;
 }

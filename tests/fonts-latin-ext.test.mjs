@@ -19,8 +19,6 @@ const REQUIRED_FILES = [
   'playfair-display-latin-ext-700-normal.woff2',
   'special-elite-latin-ext-400-normal.woff2',
   'press-start-2p-latin-ext-400-normal.woff2',
-  'quicksand-latin-ext-400-normal.woff2',
-  'quicksand-latin-ext-600-normal.woff2',
 ];
 
 test('latin-ext font files are bundled', () => {
