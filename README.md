@@ -4,7 +4,7 @@ A web app that applies fully stylized "filters" to real-world maps — color
 palette, typography, and point-of-interest icons all change together — and
 exports any selected area as a print-ready PNG.
 
-Ships with six filters:
+Ships with seven filters:
 
 | Filter | Look |
 |---|---|
@@ -14,6 +14,7 @@ Ships with six filters:
 | **Noir Gazette** | Newsprint palette, Playfair Display headlines, typewriter details |
 | **8-Bit Overworld** | NES sprite palette, Press Start 2P labels, genuinely pixelated rendering (low-res canvas upscaled nearest-neighbor, on screen and in print) |
 | **Candy Pastel** | Soft sorbet tones with rounded Quicksand type |
+| **Retro LCD** | Olive LCD screen, monospace readouts, graph-paper mesh (from [retro-lcd-design-language](https://github.com/balug87/retro-lcd-design-language)) |
 
 ## Run it
 
