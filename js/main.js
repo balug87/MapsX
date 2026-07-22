@@ -48,6 +48,26 @@ const map = new maplibregl.Map({
   attributionControl: { compact: true },
 });
 map.addControl(new maplibregl.NavigationControl({ showPitch: false }), 'top-right');
+
+// Real-time GPS position: user taps the locate button, grants permission,
+// then the blue (MapLibre) dot tracks them as they move.
+const geolocateCtrl = new maplibregl.GeolocateControl({
+  positionOptions: { enableHighAccuracy: true },
+  trackUserLocation: true,
+  showUserLocation: true,
+  showAccuracyCircle: true,
+});
+map.addControl(geolocateCtrl, 'top-right');
+geolocateCtrl.on('error', (err) => {
+  const denied = err?.code === 1 || /denied|permission/i.test(String(err?.message || ''));
+  showToast(
+    denied
+      ? 'Location permission denied — enable it in your browser settings to see your position.'
+      : 'Location unavailable — check that GPS/location services are on.',
+    true,
+  );
+});
+
 applyPixelScale();
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 map.on('moveend', writeHash);
@@ -87,6 +107,8 @@ function setTheme(id) {
   applyPixelScale();
   applyThemeToUI();
   writeHash();
+  // On phones, picking a filter should put the map front-and-center again
+  closeDrawer();
 }
 
 // --- theme cards ---
@@ -104,6 +126,42 @@ for (const t of THEMES) {
   themeList.appendChild(card);
 }
 
+// --- mobile filter drawer ---
+// CSS owns the layout switch at 720px; JS only toggles open/closed state.
+
+const menuBtn = document.getElementById('btn-menu');
+const drawerCloseBtn = document.getElementById('btn-drawer-close');
+const drawerBackdrop = document.getElementById('drawer-backdrop');
+
+function openDrawer() {
+  document.body.classList.add('drawer-open');
+  menuBtn.setAttribute('aria-expanded', 'true');
+  menuBtn.setAttribute('aria-label', 'Close filters');
+}
+
+function closeDrawer() {
+  document.body.classList.remove('drawer-open');
+  menuBtn.setAttribute('aria-expanded', 'false');
+  menuBtn.setAttribute('aria-label', 'Open filters');
+}
+
+function toggleDrawer() {
+  if (document.body.classList.contains('drawer-open')) closeDrawer();
+  else openDrawer();
+}
+
+menuBtn.addEventListener('click', toggleDrawer);
+drawerCloseBtn.addEventListener('click', closeDrawer);
+drawerBackdrop.addEventListener('click', closeDrawer);
+
+// Escape closes the drawer; resizing to desktop clears the open state
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDrawer();
+});
+window.matchMedia('(max-width: 720px)').addEventListener('change', (e) => {
+  if (!e.matches) closeDrawer();
+});
+
 // --- search ---
 
 initSearch(document.getElementById('search'), document.getElementById('search-results'), (r) => {
@@ -113,6 +171,8 @@ initSearch(document.getElementById('search'), document.getElementById('search-re
   } else {
     map.flyTo({ center: [parseFloat(r.lon), parseFloat(r.lat)], zoom: 14 });
   }
+  // After jumping to a place, close the drawer so the map is visible
+  closeDrawer();
 });
 
 // --- export UI + crop frame ---

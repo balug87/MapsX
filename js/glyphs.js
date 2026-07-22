@@ -94,8 +94,11 @@ export function parseFontName(name) {
 const rangeCache = new Map(); // "stack/range" -> Uint8Array
 
 async function ensureFontsLoaded(fonts) {
+  // Include Czech Extended-A sample chars so unicode-range latin-ext faces
+  // (č Ř ů ě …) are fetched, not just the basic latin subset.
+  const sample = 'AÁČŘŮĚŽ';
   await Promise.all(fonts.map((f) =>
-    document.fonts.load(`${f.style} ${f.weight} 24px "${f.family}"`).catch(() => {})
+    document.fonts.load(`${f.style} ${f.weight} 24px "${f.family}"`, sample).catch(() => {})
   ));
 }
 
@@ -141,10 +144,12 @@ export async function generateGlyphRange(stackName, rangeStr) {
   const fonts = stackName.split(',').map(parseFontName);
   await ensureFontsLoaded(fonts);
 
-  // The comma-joined family list lets canvas fall back through the stack
-  // (and finally to system fonts) exactly like CSS does — so symbols missing
-  // from the theme font still render instead of showing tofu.
-  const fontFamily = fonts.map((f) => `"${f.family}"`).join(',') + ',sans-serif';
+  // The comma-joined family list lets canvas fall back through the MapLibre
+  // text-font stack (e.g. UnifrakturMaguntia → IM Fell English) for glyphs
+  // missing from the lead face. We intentionally do NOT append a generic
+  // system sans-serif here — that produced mismatched metrics for Czech
+  // diacritics (Ř, č, …) when a theme font lacked latin-ext coverage.
+  const fontFamily = fonts.map((f) => `"${f.family}"`).join(',');
   const sdf = new TinySDF({
     fontSize: 24,
     buffer: 3,

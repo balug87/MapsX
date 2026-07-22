@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>MapsX — Stylized Map Filters</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>" />
   <link rel="stylesheet" href="vendor/maplibre-gl.css" />
@@ -10,9 +10,24 @@
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
+  <!-- Compact top bar: phones only (see app.css). Menu opens the filter drawer. -->
+  <header id="mobile-bar">
+    <button id="btn-menu" type="button" aria-label="Open filters" aria-controls="sidebar" aria-expanded="false">
+      <span class="menu-icon" aria-hidden="true"></span>
+    </button>
+    <h1 class="mobile-brand">MapsX</h1>
+  </header>
+
+  <!-- Dim overlay behind the mobile drawer; tap to close -->
+  <div id="drawer-backdrop"></div>
+
   <aside id="sidebar">
     <header>
-      <h1>MapsX</h1>
+      <div class="sidebar-top">
+        <h1>MapsX</h1>
+        <!-- Close control is only shown in the mobile drawer layout -->
+        <button id="btn-drawer-close" type="button" aria-label="Close filters">×</button>
+      </div>
       <p class="tagline">Stylized filters for real-world maps</p>
     </header>
 
