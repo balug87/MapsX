@@ -213,10 +213,10 @@ function drawBlueprintCreases(ctx, x, y, w, h, dpi) {
   const fracs = [0.25, 0.5, 0.75];
   for (const f of fracs) {
     const isMid = f === 0.5;
-    const ridge = isMid ? 2.2 : 1.6;
-    const shadowW = isMid ? 8 : 6;
-    const whiteA = isMid ? 0.7 : 0.55;
-    const shadowA = isMid ? 0.28 : 0.22;
+    const ridge = isMid ? 2.5 : 1.8;
+    const shadowW = isMid ? 10 : 8;
+    const whiteA = isMid ? 0.88 : 0.75;
+    const shadowA = isMid ? 0.34 : 0.28;
 
     // Vertical crease
     const vx = x + w * f;
