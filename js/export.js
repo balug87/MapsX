@@ -200,46 +200,107 @@ function drawInkBlots(ctx, x, y, w, h) {
   ctx.restore();
 }
 
-// Equidistant fold creases for blueprint prints (25/50/75%, map-area relative)
-function drawBlueprintCreases(ctx, x, y, w, h, dpi) {
-  ctx.save();
-  // Faint drafting grid first
-  const fine = Math.max(4, Math.round((6 * dpi) / 96));
-  const line = Math.max(1, Math.round(dpi / 96));
-  ctx.fillStyle = 'rgba(180,210,240,0.1)';
-  for (let yy = y; yy < y + h; yy += fine * 4) ctx.fillRect(x, yy, w, line);
-  for (let xx = x; xx < x + w; xx += fine * 4) ctx.fillRect(xx, y, line, h);
+// Small deterministic PRNG (mulberry32) so print exports of the same crop
+// reproduce the same crumple/wobble instead of re-rolling on every render.
+function rngExport(seed) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
-  const fracs = [0.25, 0.5, 0.75];
-  for (const f of fracs) {
-    const isMid = f === 0.5;
-    const ridge = isMid ? 2.5 : 1.8;
-    const shadowW = isMid ? 10 : 8;
-    const whiteA = isMid ? 0.88 : 0.75;
-    const shadowA = isMid ? 0.34 : 0.28;
-
-    // Vertical crease
-    const vx = x + w * f;
-    const vg = ctx.createLinearGradient(vx - shadowW, 0, vx + ridge, 0);
-    vg.addColorStop(0, 'rgba(8,30,60,0)');
-    vg.addColorStop(0.55, `rgba(8,30,60,${shadowA})`);
-    vg.addColorStop(0.75, 'rgba(8,30,60,0)');
-    vg.addColorStop(0.85, `rgba(255,255,255,${whiteA})`);
-    vg.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = vg;
-    ctx.fillRect(vx - shadowW, y, shadowW + ridge * 2, h);
-
-    // Horizontal crease
-    const hy = y + h * f;
-    const hg = ctx.createLinearGradient(0, hy - shadowW, 0, hy + ridge);
-    hg.addColorStop(0, 'rgba(8,30,60,0)');
-    hg.addColorStop(0.55, `rgba(8,30,60,${shadowA * 0.9})`);
-    hg.addColorStop(0.75, 'rgba(8,30,60,0)');
-    hg.addColorStop(0.85, `rgba(255,255,255,${whiteA * 0.9})`);
-    hg.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = hg;
-    ctx.fillRect(x, hy - shadowW, w, shadowW + ridge * 2);
+// Draws a line as short connected segments with a sine wobble + per-step
+// jitter (perpendicular to the line), so it reads as hand-drafted rather
+// than a ruled straight edge.
+function drawWobblyLine(ctx, x1, y1, x2, y2, amp, rand) {
+  const len = Math.hypot(x2 - x1, y2 - y1) || 1;
+  const steps = Math.max(6, Math.round(len / 10));
+  const nx = -(y2 - y1) / len, ny = (x2 - x1) / len;
+  const phase = rand() * Math.PI * 2;
+  ctx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const px = x1 + (x2 - x1) * t, py = y1 + (y2 - y1) * t;
+    const wob = Math.sin(t * Math.PI * 3 + phase) * amp + (rand() - 0.5) * amp * 0.6;
+    const qx = px + nx * wob, qy = py + ny * wob;
+    if (i === 0) ctx.moveTo(qx, qy);
+    else ctx.lineTo(qx, qy);
   }
+  ctx.stroke();
+}
+
+// Weathered blueprint overlay for print: paper grain + a hand-worn wobbly
+// grid + a crumpled crease network (ridge+shadow pairs at random angles) +
+// vignette. Matches the CSS version used on screen (see app.css's
+// body[data-effect='blueprint-grid'] rules) so screen and print agree.
+function drawBlueprintCreases(ctx, x, y, w, h, dpi) {
+  const scale = dpi / 96;
+  const rand = rngExport(20260722);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+
+  // paper grain: sparse light/dark mottling, density independent of dpi
+  const cssArea = (w / scale) * (h / scale);
+  const grainCount = Math.min(6000, Math.round(cssArea / 220));
+  for (let i = 0; i < grainCount; i++) {
+    const gx = x + rand() * w, gy = y + rand() * h;
+    const r = (4 + rand() * 10) * scale;
+    const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, r);
+    const dark = rand() > 0.5;
+    grad.addColorStop(0, dark ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(gx - r, gy - r, r * 2, r * 2);
+  }
+
+  // hand-drafted grid, wobbly rather than ruled
+  const cell = 70 * scale;
+  ctx.strokeStyle = 'rgba(180,210,240,0.16)';
+  ctx.lineWidth = Math.max(1, scale);
+  for (let gx = x + cell; gx < x + w; gx += cell) drawWobblyLine(ctx, gx, y, gx, y + h, 2.2 * scale, rand);
+  for (let gy = y + cell; gy < y + h; gy += cell) drawWobblyLine(ctx, x, gy, x + w, gy, 2.2 * scale, rand);
+
+  // crumpled crease network: long + short ridge/shadow pairs at random angles
+  const count = 11;
+  for (let i = 0; i < count; i++) {
+    const long = i < 6;
+    const cx = x + rand() * w, cy = y + rand() * h;
+    const angle = rand() * Math.PI;
+    const len = (long ? 0.75 + rand() * 0.55 : 0.18 + rand() * 0.3) * Math.max(w, h);
+    const dx = Math.cos(angle) * len, dy = Math.sin(angle) * len;
+    const x1 = cx - dx / 2, y1 = cy - dy / 2, x2 = cx + dx / 2, y2 = cy + dy / 2;
+    const lw = (long ? 2.5 + rand() * 3 : 1.5 + rand() * 2) * scale;
+    const nrmX = -dy / len, nrmY = dx / len;
+    const off = (1.2 + rand() * 1.4) * scale;
+
+    ctx.strokeStyle = `rgba(255,255,255,${(0.09 + rand() * 0.1).toFixed(2)})`;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    ctx.strokeStyle = `rgba(8,30,60,${(0.16 + rand() * 0.14).toFixed(2)})`;
+    ctx.lineWidth = lw * 0.7;
+    ctx.beginPath();
+    ctx.moveTo(x1 + nrmX * off, y1 + nrmY * off);
+    ctx.lineTo(x2 + nrmX * off, y2 + nrmY * off);
+    ctx.stroke();
+  }
+
+  // vignette
+  const vr = Math.max(w, h) * 0.72;
+  const vg = ctx.createRadialGradient(x + w / 2, y + h * 0.45, vr * 0.35, x + w / 2, y + h * 0.45, vr);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = vg;
+  ctx.fillRect(x, y, w, h);
+
   ctx.restore();
 }
 
