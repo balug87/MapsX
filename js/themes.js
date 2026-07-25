@@ -98,6 +98,15 @@ export const THEMES = [
       highlight: '#f2e7cd',
       accent: '#8a6a42',
     },
+    poiChars: {
+      food: '⚔',        // crossed swords — period cookery mark
+      drink: '\u{1F377}', // wine glass instead of beer mug
+      shop: '⚖',        // scales of commerce
+      worship: '✟',     // latin cross
+      info: '✦',        // four-pointed manuscript star
+      health: '⚜',      // fleur / apothecary
+      default: '◆',
+    },
   },
   {
     id: 'terminal',
@@ -160,6 +169,17 @@ export const THEMES = [
       highlight: '#5cffa8',
       accent: '#0a6b48',
     },
+    poiChars: {
+      food: '§',         // section sign — ASCII flair
+      cafe: '°',         // degree (steam)
+      drink: '~',        // tilde (liquid)
+      shop: '$',
+      grocery: '#',
+      worship: '+',
+      info: '?',
+      transit: '>',       // forward prompt
+      default: '*',
+    },
   },
   {
     id: 'blueprint',
@@ -219,6 +239,15 @@ export const THEMES = [
       shadow: '#0b2c50',
       highlight: '#eef5fd',
       accent: '#7ea6cf',
+    },
+    poiChars: {
+      food: '✎',        // pencil
+      drink: '◐',       // half-circle — drafting cup from above
+      shop: '✎',        // pencil on shopping list
+      info: '↑',         // north arrow
+      transit: '→',
+      monument: '◆',    // compass rose
+      default: '○',
     },
   },
   {
@@ -280,6 +309,15 @@ export const THEMES = [
       shadow: '#1c1a15',
       highlight: '#f2eee2',
       accent: '#57534a',
+    },
+    poiChars: {
+      food: '¶',        // pilcrow — newsprint mark
+      drink: '\u{211E}', // prescription take — period pharmacy
+      shop: '§',         // section sign
+      info: '?',
+      transit: '→',
+      monument: '✦',
+      default: '◆',
     },
   },
   {
@@ -439,6 +477,15 @@ export const THEMES = [
       shadow: '#2d3324',
       highlight: '#b6c1a4',
       accent: '#5c6450',
+    },
+    poiChars: {
+      food: '▤',        // block element — LCD-segment-style
+      cafe: '▥',
+      drink: '▦',
+      shop: '▧',
+      info: '▣',
+      transit: '▤',
+      default: '▣',
     },
   },
   // Synthwave: deep indigo void, hot magenta + cyan neon roads, a soft
