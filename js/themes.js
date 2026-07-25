@@ -441,6 +441,87 @@ export const THEMES = [
       accent: '#5c6450',
     },
   },
+  // Synthwave: deep indigo void, hot magenta + cyan neon roads, a soft
+  // grid drifting under everything. Orbitron brings the retro-future type.
+  {
+    id: 'cyberwave',
+    name: 'Cyberwave',
+    blurb: 'Synthwave neon — magenta & cyan on a violet horizon',
+    fonts: {
+      label: 'Orbitron Regular',
+      // Orbitron has no italic face; reuse regular — MapLibre will still
+      // pull it from the local glyph PBF and render water labels in it.
+      italic: 'Orbitron Regular',
+      display: 'Orbitron Bold',
+    },
+    uiFonts: {
+      display: '"Orbitron", sans-serif',
+      body: '"Orbitron", sans-serif',
+    },
+    colors: {
+      background: '#1a0b2e',
+      residential: '#241040',
+      wood: '#332048',
+      grass: '#1c1a3a',
+      park: '#28154a',
+      sand: '#3a1f4a',
+      wetland: '#1c1438',
+      cemetery: '#241038',
+      water: '#093a5c',
+      waterLine: '#00f0ff',
+      aeroway: '#1f2447',
+      building: '#3d2050',
+      buildingOutline: '#ff2bd6',
+      path: '#7df0ff',
+      minor: '#00e6ff',
+      minorCasing: '#1a0a2a',
+      secondary: '#33ddff',
+      secondaryCasing: '#220a3a',
+      primary: '#ff2bd6',
+      primaryCasing: '#1a0a2a',
+      motorway: '#ff5cd0',
+      motorwayCasing: '#1a0a2a',
+      rail: '#00f0ff',
+      boundary: '#7df0ff',
+      text: '#dffaff',
+      textHalo: '#1a0b2e',
+      waterText: '#5cf5ff',
+      poi: '#ff2bd6',
+      poiText: '#c2f6ff',
+    },
+    boundaryDash: [5, 3],
+    pathDash: [1, 2],
+    uiVars: {
+      '--bg': '#1a0b2e', '--panel': '#261247', '--panel-edge': '#ff2bd6',
+      '--ink': '#dffaff', '--muted': '#7a6b9a', '--accent': '#ff2bd6',
+      '--btn-bg': '#ff2bd6', '--btn-ink': '#1a0b2e', '--radius': '0px',
+    },
+    effect: 'cyberwave',
+    exportFrame: 'cyberwave',
+    // Cyber-phosphor blur — reads as neon glow on magenta + cyan roads.
+    roadGlow: true,
+    hillshade: {
+      exaggeration: 0.42,
+      shadow: '#0a0420',
+      highlight: '#ff2bd6',
+      accent: '#00f0ff',
+    },
+    // Sharp geometric POI silhouettes instead of rounded emoji where it
+    // reads well; keep the emoji silhouettes otherwise (SDF gives each
+    // its own monochrome shape tinted in the theme colors via poi/poiText).
+    poiChars: {
+      food: '◆',
+      cafe: '◆',
+      drink: '◆',
+      shop: '◆',
+      grocery: '◆',
+      lodging: '⬡',
+      worship: '✚',
+      monument: '▲',
+      info: 'i',
+      default: '◆',
+    },
+  },
 ];
 
 export function getTheme(id) {

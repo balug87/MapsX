@@ -340,6 +340,56 @@ body[data-effect='blueprint-grid'] #map-wrap::after {
   mix-blend-mode: multiply;
 }
 
+/* Cyberwave (synthwave): magenta top bloom + cyan bottom bloom + deep
+   indigo vignette, sitting over a low-opacity cyan grid + magenta
+   scanline drift. Blend "screen" so the neon reads on dark land. */
+body[data-effect='cyberwave'] #map-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background:
+    radial-gradient(ellipse 70% 45% at 78% 8%, rgba(255, 43, 214, 0.32) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 45% at 22% 92%, rgba(0, 240, 255, 0.26) 0%, transparent 60%),
+    radial-gradient(ellipse at center, transparent 48%, rgba(10, 4, 32, 0.55) 100%);
+}
+body[data-effect='cyberwave'] #map-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  /* Three layers:
+       1) subtle 24px cyan grid (horizontal lines)
+       2) subtle 24px cyan grid (vertical lines)
+       3) magenta scanline pulsing through every 3px */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 240, 255, 0.10) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, rgba(0, 240, 255, 0.06) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(0deg, rgba(255, 43, 214, 0.12) 0 1px, transparent 1px 3px);
+  background-size: 24px 24px, 24px 24px, 100% 3px;
+  mix-blend-mode: screen;
+}
+body[data-effect='cyberwave'] #sidebar {
+  text-shadow: 0 0 6px rgba(255, 43, 214, 0.22), 0 0 12px rgba(0, 240, 255, 0.18);
+}
+body[data-effect='cyberwave'] #sidebar h1,
+body[data-effect='cyberwave'] .theme-card.active .tname {
+  text-shadow: 0 0 8px rgba(255, 43, 214, 0.55), 0 0 18px rgba(0, 240, 255, 0.32);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+body[data-effect='cyberwave'] .section-label {
+  letter-spacing: 0.24em;
+}
+body[data-effect='cyberwave'] .theme-card {
+  border-color: rgba(0, 240, 255, 0.35);
+}
+body[data-effect='cyberwave'] .theme-card.active {
+  box-shadow: 0 0 14px rgba(255, 43, 214, 0.45), inset 0 0 6px rgba(0, 240, 255, 0.25);
+}
+
 /* --- living atmospheres (screen only; exports stay still) --- */
 /* Blueprint folds + Gazette ink blots stay static (no motion). */
 
@@ -377,6 +427,12 @@ body[data-effect='pixelate'] #map-wrap::after {
   animation: mapsx-pixel-band 4.5s linear infinite;
   mix-blend-mode: multiply;
 }
+body[data-effect='cyberwave'] #map-wrap::before {
+  animation: mapsx-cyber-bloom-pulse 11s ease-in-out infinite;
+}
+body[data-effect='cyberwave'] #map-wrap::after {
+  animation: mapsx-cyber-grid-drift 18s linear infinite;
+}
 
 @keyframes mapsx-dust-drift {
   from { background-position: center, 0 0, 40px 80px, 120px 20px, 200px 140px, 60px 160px; }
@@ -410,6 +466,14 @@ body[data-effect='pixelate'] #map-wrap::after {
   from { background-position: 0 0; }
   to { background-position: 0 100%; }
 }
+@keyframes mapsx-cyber-grid-drift {
+  from { background-position: 0 0, 0 0, 0 0; }
+  to { background-position: 24px 0, 24px 0, 0 3px; }
+}
+@keyframes mapsx-cyber-bloom-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18) saturate(1.1); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   body[data-effect='parchment'] #map-wrap::before,
@@ -423,9 +487,14 @@ body[data-effect='pixelate'] #map-wrap::after {
     animation: mapsx-scan-drift 8s linear infinite;
   }
   body[data-effect='lcd-grid'] #map-wrap::after,
-  body[data-effect='pixelate'] #map-wrap::after {
+  body[data-effect='pixelate'] #map-wrap::after,
+  body[data-effect='cyberwave'] #map-wrap::before,
+  body[data-effect='cyberwave'] #map-wrap::after {
     animation: none;
     opacity: 1;
+  }
+  body[data-effect='cyberwave'] #map-wrap::before {
+    filter: none;
   }
 }
 

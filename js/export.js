@@ -92,6 +92,7 @@ export async function renderPrint(maplibregl, opts, view) {
     if (opts.theme.effect === 'parchment') drawParchment(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
     if (opts.theme.effect === 'halftone') drawInkBlots(ctx, mapX, mapY, mapPxW, mapPxH);
     if (opts.theme.effect === 'blueprint-grid') drawBlueprintCreases(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
+    if (opts.theme.effect === 'cyberwave') drawCyberwave(ctx, mapX, mapY, mapPxW, mapPxH, opts.dpi);
 
     const metersPerPx = metersPerPixel(view.center[1], zoom) / ratio;
     drawOverlays(ctx, opts, { mapX, mapY, mapPxW, mapPxH, pxW, pxH, margin, metersPerPx, bearing: view.bearing || 0 });
@@ -331,9 +332,18 @@ function drawOverlays(ctx, opts, g) {
       drawTerminalBezel(ctx, g, ink, dpi);
     } else if (t.exportFrame === 'lcd') {
       drawLcdChassis(ctx, g, ink, ui, dpi);
+    } else if (t.exportFrame === 'cyberwave') {
+      const accent = ui['--accent'] || ink;
+      drawCyberwaveBrackets(ctx, g, accent, dpi);
+      if (opts.title) drawCyberwaveTitleStrip(ctx, g, ink, accent, dpi, opts.title);
     }
 
-    if (opts.title && t.exportFrame !== 'blueprint' && t.exportFrame !== 'parchment') {
+    if (
+      opts.title &&
+      t.exportFrame !== 'blueprint' &&
+      t.exportFrame !== 'parchment' &&
+      t.exportFrame !== 'cyberwave'
+    ) {
       ctx.fillStyle = ink;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -526,6 +536,83 @@ function drawLcdChassis(ctx, g, ink, ui, dpi) {
   ctx.lineWidth = Math.max(1, Math.round(dpi / 150));
   ctx.globalAlpha = 0.5;
   ctx.strokeRect(g.mapX - o * 0.35, g.mapY - o * 0.35, g.mapPxW + o * 0.7, g.mapPxH + o * 0.7);
+  ctx.restore();
+}
+
+// Synthwave neon grid + magenta scanline drawn over the printed map
+// (the on-screen CSS overlay has its own animations — the print copy
+// stays still so the export reads as a finished poster).
+function drawCyberwave(ctx, x, y, w, h, dpi) {
+  ctx.save();
+  const grid = Math.max(6, Math.round((24 * dpi) / 96));
+  // Horizontal + vertical cyan grid
+  ctx.fillStyle = 'rgba(0, 240, 255, 0.10)';
+  for (let yy = y; yy < y + h; yy += grid) ctx.fillRect(x, yy, w, 1);
+  ctx.fillStyle = 'rgba(0, 240, 255, 0.07)';
+  for (let xx = x; xx < x + w; xx += grid) ctx.fillRect(xx, y, 1, h);
+  // Magenta scanline
+  const scan = Math.max(2, Math.round((3 * dpi) / 96));
+  ctx.fillStyle = 'rgba(255, 43, 214, 0.11)';
+  for (let yy = y; yy < y + h; yy += scan) ctx.fillRect(x, yy, w, 1);
+  ctx.restore();
+}
+
+// Right-angle neon brackets at each map corner. Two perpendicular
+// accent strokes meeting at the corner + a small filled "node" at each
+// tip so the print border reads as cyberwave reticle.
+function drawCyberwaveBrackets(ctx, g, accent, dpi) {
+  const off = Math.max(2, Math.round(dpi / 150)) * 7;
+  const arm = Math.round(dpi * 0.32);
+  const lineW = Math.max(2, Math.round(dpi / 90));
+  ctx.save();
+  ctx.lineCap = 'square';
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = lineW;
+  const corners = [
+    [g.mapX - off, g.mapY - off, 1, 1],
+    [g.mapX + g.mapPxW + off, g.mapY - off, -1, 1],
+    [g.mapX - off, g.mapY + g.mapPxH + off, 1, -1],
+    [g.mapX + g.mapPxW + off, g.mapY + g.mapPxH + off, -1, -1],
+  ];
+  for (const [x, y, dx, dy] of corners) {
+    ctx.beginPath();
+    ctx.moveTo(x + dx * arm, y);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x, y + dy * arm);
+    ctx.stroke();
+    // Filled node at the elbow
+    ctx.fillStyle = accent;
+    ctx.fillRect(x - lineW, y - lineW, lineW * 2, lineW * 2);
+  }
+  ctx.restore();
+}
+
+// Glowing magenta title bar above the map area. Two parallel accent
+// strokes frame a thin panel, with solid side ticks at the left/right
+// edges and the title centered in Orbitron uppercase.
+function drawCyberwaveTitleStrip(ctx, g, ink, accent, dpi, title) {
+  if (!title) return;
+  const stripH = Math.round(dpi * 0.42);
+  const stroke = Math.max(2, Math.round(dpi / 96));
+  const tick = Math.round(dpi * 0.18);
+  // Position the strip in the top margin, just above the map area
+  const x = g.mapX;
+  const y = g.mapY - Math.round(stripH * 0.55);
+
+  ctx.save();
+  // Top + bottom accent strokes
+  ctx.fillStyle = accent;
+  ctx.fillRect(x, y, g.mapPxW, stroke);
+  ctx.fillRect(x, y + stripH - stroke, g.mapPxW, stroke);
+  // Side accent blocks
+  ctx.fillRect(x, y, tick, stripH);
+  ctx.fillRect(x + g.mapPxW - tick, y, tick, stripH);
+  // Title centered in font-display
+  ctx.fillStyle = ink;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `${Math.round(dpi * 0.22)}px "Orbitron", sans-serif`;
+  ctx.fillText(title, g.pxW / 2, y + stripH / 2, g.mapPxW - tick * 4);
   ctx.restore();
 }
 
