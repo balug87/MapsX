@@ -28,8 +28,24 @@ body {
   font-family: var(--font-body);
   color: var(--ink);
   background: var(--bg);
-  display: flex;
   transition: background 0.3s;
+}
+
+/* Static MapsX page lays out on the body. The embedded preview uses #mapsx-app. */
+body.mapsx-standalone,
+#mapsx-app {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+}
+#mapsx-app {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
 }
 
 body.busy { cursor: progress; }
@@ -155,6 +171,34 @@ body.busy { cursor: progress; }
 
 .theme-card .tname { font-size: 14.5px; font-weight: 600; }
 .theme-card .tblurb { font-size: 11px; color: var(--muted); line-height: 1.25; }
+
+#dither-controls { display: flex; flex-direction: column; gap: 8px; }
+#dither-controls[hidden] { display: none; }
+.dither-modes { display: flex; flex-wrap: wrap; gap: 6px; }
+.dither-modes button {
+  font: inherit;
+  font-size: 12px;
+  padding: 7px 8px;
+  min-height: 36px;
+  border: 1px solid var(--panel-edge);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.dither-modes button.active {
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+}
+.dither-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.dither-slider input { flex: 1; accent-color: var(--accent); min-height: 28px; }
 
 /* --- buttons --- */
 
@@ -644,7 +688,8 @@ body[data-effect='cyberwave'] #map-wrap::after {
 /* --- mobile: full-screen map + slide-over filter drawer --- */
 
 @media (max-width: 720px) {
-  body {
+  body.mapsx-standalone,
+  #mapsx-app {
     flex-direction: column;
     /* Leave room for the notch / home indicator on modern phones */
     padding-top: env(safe-area-inset-top, 0);

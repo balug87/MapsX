@@ -4,10 +4,11 @@ A web app that applies fully stylized "filters" to real-world maps — color
 palette, typography, and point-of-interest icons all change together — and
 exports any selected area as a print-ready PNG.
 
-Ships with seven filters:
+Ships with eight filters:
 
 | Filter | Look |
 |---|---|
+| **Dither Press** | Ordered-dither ink (Bayer 8×8 / 4×4, halftone, line, crosshatch, noise) over a limited press palette. Cell size and spread are live. Special Elite throughout. Print exports keep the same screen, with registration marks |
 | **Medieval Parchment** | Aged vellum, sepia inks, blackletter city names (UnifrakturMaguntia), IM Fell English labels |
 | **Terminal** | Phosphor green on black, VT323 pixel type, scanline overlay |
 | **Blueprint** | White ink on cyanotype blue, hand-drafted lettering (Architects Daughter) |

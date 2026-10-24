@@ -4,6 +4,7 @@
 
 import { buildStyle } from './stylegen.js';
 import { applyLandPatterns } from './patterns.js';
+import { ditherRegion } from './dither.js';
 
 export const PAPER_SIZES = {
   a5: { name: 'A5', w: 5.83, h: 8.27 },
@@ -83,6 +84,13 @@ export async function renderPrint(maplibregl, opts, view) {
     if (opts.theme.pixelScale) ctx.imageSmoothingEnabled = false;
     ctx.drawImage(mapCanvas, mapX, mapY, mapPxW, mapPxH);
     ctx.imageSmoothingEnabled = true;
+
+    if (opts.theme.dither) {
+      ditherRegion(ctx, mapX, mapY, mapPxW, mapPxH, {
+        ...opts.theme.dither,
+        scale: opts.dpi / 96,
+      });
+    }
 
     if (opts.theme.effect === 'scanlines') {
       drawCrtVignette(ctx, mapX, mapY, mapPxW, mapPxH);
@@ -336,6 +344,8 @@ function drawOverlays(ctx, opts, g) {
       const accent = ui['--accent'] || ink;
       drawCyberwaveBrackets(ctx, g, accent, dpi);
       if (opts.title) drawCyberwaveTitleStrip(ctx, g, ink, accent, dpi, opts.title);
+    } else if (t.exportFrame === 'dither') {
+      drawRegistrationMarks(ctx, g, ink, ui['--accent'], dpi);
     }
 
     if (
@@ -539,9 +549,6 @@ function drawLcdChassis(ctx, g, ink, ui, dpi) {
   ctx.restore();
 }
 
-// Synthwave neon grid + magenta scanline drawn over the printed map
-// (the on-screen CSS overlay has its own animations — the print copy
-// stays still so the export reads as a finished poster).
 function drawCyberwave(ctx, x, y, w, h, dpi) {
   ctx.save();
   const grid = Math.max(6, Math.round((24 * dpi) / 96));
@@ -613,6 +620,30 @@ function drawCyberwaveTitleStrip(ctx, g, ink, accent, dpi, title) {
   ctx.textBaseline = 'middle';
   ctx.font = `${Math.round(dpi * 0.22)}px "Orbitron", sans-serif`;
   ctx.fillText(title, g.pxW / 2, y + stripH / 2, g.mapPxW - tick * 4);
+  ctx.restore();
+}
+
+function drawRegistrationMarks(ctx, g, ink, accent, dpi) {
+  const r = Math.max(4, Math.round(dpi * 0.09));
+  const o = Math.round(dpi * 0.2);
+  const marks = [
+    [g.mapX - o, g.mapY - o],
+    [g.mapX + g.mapPxW + o, g.mapY - o],
+    [g.mapX - o, g.mapY + g.mapPxH + o],
+    [g.mapX + g.mapPxW + o, g.mapY + g.mapPxH + o],
+  ];
+  ctx.save();
+  ctx.strokeStyle = accent || ink;
+  ctx.lineWidth = Math.max(1, Math.round(dpi / 150));
+  for (const [x, y] of marks) {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.moveTo(x - r * 1.8, y);
+    ctx.lineTo(x + r * 1.8, y);
+    ctx.moveTo(x, y - r * 1.8);
+    ctx.lineTo(x, y + r * 1.8);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
