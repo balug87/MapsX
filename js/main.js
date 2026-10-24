@@ -6,6 +6,7 @@ import { registerGlyphProtocol } from './glyphs.js';
 import { applyLandPatterns } from './patterns.js';
 import { initSearch } from './search.js';
 import { PAPER_SIZES, paperAspect, renderPrint, downloadCanvas, openPrintView } from './export.js';
+import { DITHER_MODES, attachDither } from './dither.js';
 
 const maplibregl = window.maplibregl;
 registerGlyphProtocol(maplibregl);
@@ -47,6 +48,7 @@ const map = new maplibregl.Map({
   pitch: 0,
   maxPitch: 0,
   attributionControl: { compact: true },
+  canvasContextAttributes: { preserveDrawingBuffer: true, antialias: true },
 });
 map.addControl(new maplibregl.NavigationControl({ showPitch: false }), 'top-right');
 
@@ -70,6 +72,7 @@ geolocateCtrl.on('error', (err) => {
 });
 
 applyPixelScale();
+const ditherCtl = attachDither(map);
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 map.on('moveend', writeHash);
 
@@ -96,6 +99,8 @@ function applyThemeToUI() {
   for (const card of document.querySelectorAll('.theme-card')) {
     card.classList.toggle('active', card.dataset.theme === theme.id);
   }
+  syncDitherControls();
+  ditherCtl.sync(theme);
 }
 
 function applyPixelScale() {
@@ -129,6 +134,78 @@ for (const t of THEMES) {
   card.addEventListener('click', () => setTheme(t.id));
   themeList.appendChild(card);
 }
+
+// Screen controls for Dither Press (Bayer / halftone / hatch…).
+try {
+  const saved = JSON.parse(localStorage.getItem('mapsx-dither') || 'null');
+  const spec = getTheme('dither');
+  if (saved && spec.dither) {
+    if (DITHER_MODES.some((m) => m.id === saved.mode)) spec.dither.mode = saved.mode;
+    const cell = Number(saved.pixelSize);
+    if (cell >= 1 && cell <= 5) spec.dither.pixelSize = cell;
+    const spread = Number(saved.spread);
+    if (spread >= 0 && spread <= 1) spec.dither.spread = spread;
+  }
+} catch {
+  /* ignore broken prefs */
+}
+
+const ditherBox = document.createElement('div');
+ditherBox.id = 'dither-controls';
+ditherBox.hidden = true;
+ditherBox.innerHTML = `
+  <p class="section-label">Screen</p>
+  <div class="dither-modes" id="dither-modes"></div>
+  <label class="dither-slider">Cell <input id="dither-cell" type="range" min="1" max="5" step="1" value="2" /></label>
+  <label class="dither-slider">Spread <input id="dither-spread" type="range" min="0" max="100" step="1" value="86" /></label>
+`;
+themeList.after(ditherBox);
+const ditherModesEl = ditherBox.querySelector('#dither-modes');
+const ditherCell = ditherBox.querySelector('#dither-cell');
+const ditherSpread = ditherBox.querySelector('#dither-spread');
+
+function persistDither() {
+  const d = getTheme('dither').dither;
+  localStorage.setItem('mapsx-dither', JSON.stringify({
+    mode: d.mode, pixelSize: d.pixelSize, spread: d.spread,
+  }));
+}
+
+function syncDitherControls() {
+  const on = !!theme.dither;
+  ditherBox.hidden = !on;
+  if (!on) return;
+  const d = theme.dither;
+  for (const b of ditherModesEl.querySelectorAll('button')) {
+    b.classList.toggle('active', b.dataset.mode === d.mode);
+  }
+  ditherCell.value = String(d.pixelSize);
+  ditherSpread.value = String(Math.round(d.spread * 100));
+}
+
+for (const m of DITHER_MODES) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = m.label;
+  b.dataset.mode = m.id;
+  b.addEventListener('click', () => {
+    getTheme('dither').dither.mode = m.id;
+    persistDither();
+    if (theme.dither) ditherCtl.sync(theme);
+    syncDitherControls();
+  });
+  ditherModesEl.appendChild(b);
+}
+ditherCell.addEventListener('input', () => {
+  getTheme('dither').dither.pixelSize = parseInt(ditherCell.value, 10);
+  persistDither();
+  if (theme.dither) ditherCtl.sync(theme);
+});
+ditherSpread.addEventListener('input', () => {
+  getTheme('dither').dither.spread = parseInt(ditherSpread.value, 10) / 100;
+  persistDither();
+  if (theme.dither) ditherCtl.sync(theme);
+});
 
 // --- mobile filter drawer ---
 // CSS owns the layout switch at 720px; JS only toggles open/closed state.
